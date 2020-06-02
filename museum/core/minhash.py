@@ -1,11 +1,11 @@
 import hashlib
 
 
-def get_min_hashes(feature_set, hash_count, use_k_smallest=False, use_min_max=False):
+def get_min_hashes(feature_set, hash_count, use_smallest, use_min_max):
     feature_list = list(feature_set)
     if len(feature_list) <= 1:
         return
-    if use_k_smallest:
+    if use_smallest:
         min_hashes = k_smallest_min_hashes(feature_list, hash_count)
     else:
         min_hashes = k_independent_min_hashes(feature_list, hash_count, use_min_max)

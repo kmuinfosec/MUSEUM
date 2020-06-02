@@ -1,24 +1,28 @@
-from museum.util import module_check, load_pickle, save_pickle, load_preprocessed_data
+from museum.util import module_loader, check_cached, load_cached_data, caching
 from museum.core.minhash import get_min_hashes
-import importlib
+
 import hashlib
 import os
 
-
-def preprocess(file_path, use_k_smallest, hash_count, module_name, use_mod, use_minmax, module_kwargs):
-    if module_name is None:
-        feature_set = load_preprocessed_data(file_path)
+def preprocess(file_path, index_info, use_caching=False):
+    name = os.path.splitext(os.path.split(file_path)[1])[0]
+    is_cached, target_file = check_cached(file_path, index_info)
+    if is_cached:
+        min_hashes, feature_size = load_cached_data(target_file)
     else:
-        module_check(module_name)
-        module_name = 'museum.feature.'+module_name
-        preprocess_module = importlib.import_module(module_name)
-        feature_set = preprocess_module.preprocess_func(file_path, **module_kwargs)
-    feature_size = len(feature_set)
-    if use_mod != 0:
-        feature_set = reduce_the_feature_by_mod(feature_set, use_mod)
-    min_hashes = get_min_hashes(feature_set, hash_count, use_k_smallest, use_minmax)
-    return min_hashes, feature_size
+        min_hashes, feature_size = module_process(file_path, index_info)
+        if use_caching:
+            caching(min_hashes, feature_size, target_file, index_info)
+    return min_hashes, feature_size, name
 
+def module_process(file_path, index_info):
+    module = module_loader(index_info['module_info'])
+    feature_set = module.process(file_path)
+    feature_size = len(feature_set)
+    if index_info['use_mod']:
+        feature_set = reduce_the_feature_by_mod(feature_set, index_info['use_mod'])
+    min_hashes = get_min_hashes(feature_set, index_info['hash_count'], index_info['use_smallest'], index_info['use_minmax'])
+    return min_hashes, feature_size
 
 def reduce_the_feature_by_mod(feature, mod_num):
     after_mod_list = []

@@ -10,7 +10,9 @@ from museum.util import hit_word_parser
 - ej : estimated containment
     = (es * (|A| + |B|)) / min(|A|,|B|) * (es+1) 
 """
-def get_similarity(hash_count, min_hashes, response, feature_size, use_k_smallest=False, use_minmax=False):
+
+
+def get_similarity(min_hashes, response, feature_size, index_info):
     min_hashes = set(min_hashes)
     result_list = []
     for hit in response['hits']['hits']:
@@ -24,16 +26,16 @@ def get_similarity(hash_count, min_hashes, response, feature_size, use_k_smalles
             union[i] = change_octal
         sorted_union = sorted(union)
         min_union = set()
-        for i in range(min(len(sorted_union), hash_count)):
+        for i in range(min(len(sorted_union), index_info['hash_count'])):
             min_union.add(hex(sorted_union[i])[2:].rjust(32, '0'))
         numerator = min_union & intersect
-        if use_k_smallest:
-            es = len(numerator) / min(len(sorted_union), hash_count)
+        if index_info['use_smallest']:
+            es = len(numerator) / min(len(sorted_union), index_info['hash_count'])
         else:
-            if use_minmax:
+            if index_info['use_minmax']:
                 es = len(intersect) / max(len(min_hashes), len(hit_source))
             else:
-                es = len(intersect) / hash_count
+                es = len(intersect) / index_info['hash_count']
         if feature_size in hit['_source']:
             min_len = min(feature_size, hit_feature_size)
             ec = (es * (feature_size + hit_feature_size)) / (min_len * (es + 1))
