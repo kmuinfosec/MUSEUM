@@ -84,7 +84,7 @@ class Museum:
             for preprocess_items in multiprocessing_helper(preprocess, batch, process_count, index_info=index_info,
                                                            use_caching=use_caching, tqdm_disable=True):
                 query = create_query(preprocess_items, limit)
-                if preprocess_items:
+                if query:
                     try:
                         response = self.es.search(index=index_name, body=json.dumps(query),
                                                   search_type='dfs_query_then_fetch')
