@@ -4,7 +4,7 @@ from multiprocessing import freeze_support
 from multiprocessing.pool import Pool, ThreadPool
 from functools import partial
 from tqdm import tqdm
-from museum.feature import *
+from museum.module import *
 
 USER_HOME = os.path.expanduser('~')
 CACHE_DIR = os.path.join(USER_HOME, 'museum_cache')

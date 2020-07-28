@@ -1,5 +1,5 @@
 from museum.client import Museum
-from museum.feature import AsymmetricExtremum, Strings
+from museum.module import AsymmetricExtremum, Strings
 import time
 
 

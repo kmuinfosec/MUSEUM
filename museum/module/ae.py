@@ -2,13 +2,14 @@ from museum.core.feature import Base
 
 import os
 
+
 class AsymmetricExtremum(Base):
     def __int__(self, **kwargs):
         super().__init__(**kwargs)
 
     def process(self, file_path):
         if 'window_size' not in self.__dict__:
-            msg = "'window_size' parameter is not passed"
+            msg = "Parameter 'window_size' must be passed"
             raise Exception(msg)
         if not os.path.isfile(file_path):
             error_msg = "{} does not exist".format(file_path)

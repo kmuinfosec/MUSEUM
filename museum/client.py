@@ -9,6 +9,7 @@ from tqdm import tqdm
 import os
 import json
 
+
 class Museum:
     def __init__(self, host, port):
         self.es = Elasticsearch(hosts=host, port=port, timeout=600)
