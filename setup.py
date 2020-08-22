@@ -20,7 +20,7 @@ dependency_links = [
     ]
 
 setup(
-    name='MUSEUM',
+    name='museum',
     version='1.0',
     description='Multi Feature Search Engine Using Malware Bigdata',
     author='KMU Infosec',
