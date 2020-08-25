@@ -34,7 +34,7 @@ class Museum:
         index_info['index_name'] = index_name
         return index_info
 
-    def insert_bulk(self, index_name, target_dir, process_count=8, batch_size=None, use_caching=True):
+    def index_bulk(self, index_name, target_dir, process_count=8, batch_size=None, use_caching=True):
         index_info = self.get_index_info(index_name)
 
         if not os.path.isdir(target_dir):
@@ -72,13 +72,13 @@ class Museum:
             report = {'query': preprocess_items[2], 'hits': []}
             return report
 
-    def search_bulk(self, index_name, target_dir, limit=1, process_count=1, batch_size=None, use_caching=False,
+    def search_bulk(self, index_name, target, limit=1, process_count=1, batch_size=None, use_caching=False,
                     tqdm_disable=False):
         index_info = self.get_index_info(index_name)
-        if not os.path.isdir(target_dir):
-            raise BaseException("Target directory doesn't exist")
-
-        file_list = walk_directory(target_dir)
+        if not os.path.isdir(target):
+            file_list = target
+        else:
+            file_list = walk_directory(target)
 
         batch_list = get_batch_list(file_list, batch_size)
         for batch in tqdm(batch_list, disable=tqdm_disable):
