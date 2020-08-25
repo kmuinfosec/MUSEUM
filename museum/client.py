@@ -75,7 +75,7 @@ class Museum:
     def search_bulk(self, index_name, target, limit=1, process_count=1, batch_size=None, use_caching=False,
                     tqdm_disable=False):
         index_info = self.get_index_info(index_name)
-        if type(target) is list:
+        if type(target) is list or type(target) is set:
             file_list = target
         else:
             if type(target) is str and os.path.isdir(target):
@@ -99,4 +99,4 @@ class Museum:
                     report = {'query': preprocess_items[2], 'hits': similar_list}
                 else:
                     report = {'query': preprocess_items[2], 'hits': []}
-                yield reportg
+                yield report
