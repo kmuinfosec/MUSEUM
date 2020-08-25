@@ -1,1 +1,1 @@
-from museum.client import Museum
+from museum.core.client import MUSEUM

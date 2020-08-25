@@ -1,19 +1,17 @@
-def create_document(preprocess_items, index_name):
-    min_hashes, feature_size, name = preprocess_items
-    if min_hashes is not None:
-        document = {
-            "_index": index_name,
-            "_type": '_doc',
-            "_id": name,
-            "_source": {
-                'data': min_hashes,
-                'feature_size': feature_size
-            }
+def get_document_dict(preprocess_items, index_name):
+    document = {
+        "_index": index_name,
+        "_id": preprocess_items[0],
+        "_source": {
+            'data': preprocess_items[1],
+            'feature_size': preprocess_items[2],
+            'file_name': preprocess_items[3]
         }
-        return document
+    }
+    return document
 
-def create_query(preprocess_items, limit):
-    min_hashes, feature_size, name = preprocess_items
+
+def get_query_dict(min_hashes, limit):
     if min_hashes is not None:
         query = {
             "_source": True,
@@ -29,14 +27,15 @@ def create_query(preprocess_items, limit):
         }
         return query
 
-def create_mapping_form(module, hash_count, use_smallest, use_mod, use_minmax, shards, replicas):
+
+def get_mapping_dict(module, num_hash, use_smallest, use_mod, use_minmax, shards, replicas):
     module_info = {
         'module_name': module.__class__.__name__,
         'module_params': module.__dict__
     }
     mapping_dict = {
         "settings": {
-            "refresh_interval": "30s",
+            "refresh_interval": "10s",
             'number_of_shards': shards,
             'number_of_replicas': replicas,
             "similarity": {
@@ -49,23 +48,24 @@ def create_mapping_form(module, hash_count, use_smallest, use_mod, use_minmax, s
             }
         },
         "mappings": {
-            "_doc": {
-                '_meta': {
-                    'module_info': module_info,
-                    'hash_count': hash_count,
-                    'use_smallest': use_smallest,
-                    'use_mod': use_mod,
-                    'use_minmax': use_minmax,
+            '_meta': {
+                'module_info': module_info,
+                'num_hash': num_hash,
+                'use_smallest': use_smallest,
+                'use_mod': use_mod,
+                'use_minmax': use_minmax,
+            },
+            "dynamic": "strict",
+            "properties": {
+                'data': {
+                    'type': 'keyword',
+                    'similarity': 'scripted_one'
                 },
-                "dynamic": "strict",
-                "properties": {
-                    'data': {
-                        'type': 'text',
-                        'similarity': 'scripted_one'
-                    },
-                    'feature_size': {
-                        'type': 'integer'
-                    }
+                'feature_size': {
+                    'type': 'integer'
+                },
+                'file_name': {
+                    'type': 'keyword'
                 }
             }
         }

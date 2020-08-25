@@ -1,4 +1,4 @@
-from museum.util import hit_word_parser
+from museum.utils import hit_word_parser
 
 
 """
@@ -12,13 +12,11 @@ from museum.util import hit_word_parser
 """
 
 
-def get_similarity(min_hashes, response, feature_size, index_info):
+def get_similarity(response, min_hashes, feature_size, index_info):
     min_hashes = set(min_hashes)
     result_list = []
     for hit in response['hits']['hits']:
         hit_source = set(hit['_source']['data'])
-        if 'feature_size' in hit['_source']:
-            hit_feature_size = hit['_source']['feature_size']
         intersect = hit_word_parser(hit)
         union = list(set(min_hashes) | hit_source)
         for i, num in enumerate(union):
@@ -26,24 +24,25 @@ def get_similarity(min_hashes, response, feature_size, index_info):
             union[i] = change_octal
         sorted_union = sorted(union)
         min_union = set()
-        for i in range(min(len(sorted_union), index_info['hash_count'])):
+        for i in range(min(len(sorted_union), index_info['num_hash'])):
             min_union.add(hex(sorted_union[i])[2:].rjust(32, '0'))
         numerator = min_union & intersect
         if index_info['use_smallest']:
-            es = len(numerator) / min(len(sorted_union), index_info['hash_count'])
+            es = len(numerator) / min(len(sorted_union), index_info['num_hash'])
         else:
             if index_info['use_minmax']:
                 es = len(intersect) / max(len(min_hashes), len(hit_source))
             else:
-                es = len(intersect) / index_info['hash_count']
-        if feature_size in hit['_source']:
-            min_len = min(feature_size, hit_feature_size)
-            ec = (es * (feature_size + hit_feature_size)) / (min_len * (es + 1))
+                es = len(intersect) / index_info['num_hash']
+        if 'feature_size' in hit['_source']:
+            min_len = min(feature_size, hit['_source']['feature_size'])
+            ec = (es * (feature_size + hit['_source']['feature_size'])) / (min_len * (es + 1))
         else:
             ec = None
         result_list.append({
             '_id': hit['_id'],
             '_score': hit['_score'],
+            'file_name': hit['_source']['file_name'],
             'e_similarity': es,
             'e_containment': ec
         })
