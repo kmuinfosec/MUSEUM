@@ -1,10 +1,12 @@
 import os
 import hashlib
 from multiprocessing import freeze_support
-from multiprocessing.pool import Pool, ThreadPool
+from multiprocessing.pool import Pool
 from functools import partial
 from tqdm import tqdm
 from museum.module import *
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_file_md5(file_path):
@@ -65,13 +67,7 @@ def batch_generator(file_list, batch_size):
         yield batch_job
 
 
-def multiprocessing_helper(worker, jobs, process_count=8, tqdm_disable=False, **kwargs):
+def mp_helper(worker, jobs, process_count=8, tqdm_disable=False, desc='', **kwargs):
     with Pool(processes=process_count) as pool:
-        for ret in tqdm(pool.imap(partial(worker, **kwargs), jobs), total=len(jobs), desc=worker.__name__, disable=tqdm_disable):
-            yield ret
-
-
-def multithreading_helper(worker, jobs, process_count, **kwargs):
-    with ThreadPool(processes=process_count) as pool:
-        for ret in tqdm(pool.imap(partial(worker, **kwargs), jobs), total=len(jobs), desc=worker.__name__):
+        for ret in tqdm(pool.imap(partial(worker, **kwargs), jobs), total=len(jobs), desc=desc, disable=tqdm_disable):
             yield ret

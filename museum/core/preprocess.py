@@ -1,7 +1,8 @@
 import os
 import hashlib
 
-from museum.utils import cache, module_loader, get_file_md5
+from museum.common.utils import module_loader, get_file_md5
+from museum.common import cache
 
 
 def do(file_path, index_info, use_caching):
@@ -9,17 +10,17 @@ def do(file_path, index_info, use_caching):
     file_name = os.path.splitext(os.path.split(file_path)[1])[0]
     is_cache, cache_path = cache.check_cached(file_md5, index_info)
     if is_cache:
-        min_hashes, feature_size = cache.load_cache(cache_path)
+        samples, feature_size = cache.load_cache(cache_path)
     else:
         module = module_loader(index_info['module_info'])
-        feature_set = module.process(file_path)
+        feature_set = set(module.process(file_path))
         feature_size = len(feature_set)
         if index_info['use_mod']:
             feature_set = reduce_the_feature_by_mod(feature_set, index_info['use_mod'])
-        min_hashes = minhash(feature_set, index_info['num_hash'], index_info['use_smallest'], index_info['use_minmax'])
+        samples = minhash(feature_set, index_info['num_hash'], index_info['use_smallest'], index_info['use_minmax'])
         if use_caching:
-            cache.make_cache(cache_path, min_hashes, feature_size)
-    return file_md5, min_hashes, feature_size, file_name
+            cache.make_cache(cache_path, samples, feature_size)
+    return file_md5, samples, feature_size, file_name
 
 
 def minhash(feature_set, num_hash, use_smallest, use_min_max):
@@ -27,10 +28,10 @@ def minhash(feature_set, num_hash, use_smallest, use_min_max):
     if len(feature_list) <= 1:
         return
     if use_smallest:
-        min_hashes = k_smallest(feature_list, num_hash)
+        samples = k_smallest(feature_list, num_hash)
     else:
-        min_hashes = k_independent(feature_list, num_hash, use_min_max)
-    return list(set(min_hashes))
+        samples = k_independent(feature_list, num_hash, use_min_max)
+    return set(samples)
 
 
 def k_smallest(feature_list, num_hash):
@@ -46,12 +47,12 @@ def k_smallest(feature_list, num_hash):
             int_features.append(int(hashed_feature, 16))
     int_features = list(set(int_features))
     int_features.sort()
-    min_hashes = []
+    samples = []
     num_min = min(num_hash, len(int_features))
     for i in range(num_min):
         insert_feature = hex(int_features[i])[2:].rjust(32, '0')
-        min_hashes.append(insert_feature)
-    return min_hashes
+        samples.append(insert_feature)
+    return samples
 
 
 def k_independent(feature_list, num_hash, use_min_max):
