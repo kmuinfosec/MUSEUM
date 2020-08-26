@@ -49,7 +49,7 @@ class MUSEUM:
                                                                         use_caching=self.use_caching,
                                                                         desc="bulk preprocess"):
                 if samples:
-                    bulk_data_list.append(get_bulk_data(file_md5, samples, feature_size, file_name, index_info))
+                    bulk_data_list.append(get_bulk_data(file_md5, samples, feature_size, file_name, index_name))
 
             self.es.bulk(body=bulk_data_list)
 
