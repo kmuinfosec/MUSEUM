@@ -90,16 +90,17 @@ class MUSEUM:
                     query_samples_list.append(query_samples)
                     query_feature_size_list.append(query_feature_size)
                     file_name_list.append(file_name)
-            try:
-                resp = self.es.msearch(body="\n".join(search_data_list))
-            except ConnectionTimeout:
-                print('Search error detected')
-                continue
             report_list = []
-            for i, response in enumerate(resp['responses']):
-                report = {'query': file_name_list[i],
-                          'hits': make_report_hits(response, query_samples_list[i],
-                                                   query_feature_size_list[i], index_info)}
-                report_list.append(report)
+            if search_data_list:
+                try:
+                    resp = self.es.msearch(body="\n".join(search_data_list))
+                except ConnectionTimeout:
+                    print('Search error detected')
+                    continue
+                for i, response in enumerate(resp['responses']):
+                    report = {'query': file_name_list[i],
+                              'hits': make_report_hits(response, query_samples_list[i],
+                                                       query_feature_size_list[i], index_info)}
+                    report_list.append(report)
 
             yield report_list
