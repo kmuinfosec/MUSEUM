@@ -21,7 +21,7 @@ dependency_links = [
 setup(
     name='museum',
     version='1.0',
-    description='Multi Feature Search Engine Using Malware Bigdata',
+    description='Multifacted Search Engine Using MinHash Sampling',
     author='KMU Infosec',
     author_email='m2019551@kookmin.ac.kr',
     packages=find_packages(),
