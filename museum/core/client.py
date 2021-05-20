@@ -6,6 +6,7 @@ from museum.common.report import make_report_hits
 
 from elasticsearch import Elasticsearch, ConnectionTimeout
 import os
+import time
 
 
 class MUSEUM:
@@ -14,26 +15,27 @@ class MUSEUM:
         self.use_caching = use_caching
 
     def create_index(self, index, module, num_hash=128, use_smallest=False,
-                     use_mod=False, use_minmax=False, shards=5, replicas=1):
+                     use_mod=False, use_minmax=False, shards=5, replicas=1, interval=10):
         if index == '':
             raise BaseException("Index parameter is empty")
         if self.es.indices.exists(index):
-            raise AlreadyExistError("{} is already exist index".format(index))
+            raise AlreadyExistError("\"{}\" already exist index".format(index))
 
         res = self.es.indices.create(
             index=index,
-            body=get_index_template(module, num_hash, use_smallest, use_mod, use_minmax, shards, replicas)
+            body=get_index_template(module, num_hash, use_smallest, use_mod, use_minmax, shards, replicas, interval)
         )
         return res
 
-    def get_index_metadata(self, index_name):
+    def get_index_info(self, index_name):
         if not self.es.indices.exists(index_name):
-            raise NotExistError("Index doesn't exist")
+            raise NotExistError("Index does not exist")
         index_info = self.es.indices.get_mapping(index=index_name)[index_name]['mappings']['_meta']
+        index_info['module'] = module_loader(index_info['module_info'])
         return index_info
 
-    def bulk_index(self, index_name, target, process_count=8, batch_size=10000):
-        index_info = self.get_index_metadata(index_name)
+    def bulk(self, index_name, target, process_count=8, batch_size=10000):
+        index_info = self.get_index_info(index_name)
 
         if type(target) is list or type(target) is set:
             file_list = target
@@ -53,9 +55,12 @@ class MUSEUM:
 
             self.es.bulk(body=bulk_data_list)
 
+        print("Waiting {} sec for index refresh".format(index_info["refresh_interval"]))
+        time.sleep(int(index_info["refresh_interval"]))
+
     def search(self, index_name, file_path, limit=1, index_info=None):
         if not index_info:
-            index_info = self.get_index_metadata(index_name)
+            index_info = self.get_index_info(index_name)
         _, query_samples, query_feature_size, file_name = preprocess.do(file_path, index_info, self.use_caching)
 
         report = {'query': file_name, 'hits': []}
@@ -75,7 +80,7 @@ class MUSEUM:
             file_list = walk_directory(target)
         else:
             raise NotADirectoryError("{} is not a directory".format(target))
-        index_info = self.get_index_metadata(index_name)
+        index_info = self.get_index_info(index_name)
         for jobs in batch_generator(file_list, batch_size):
             search_data_list = []
             query_samples_list = []

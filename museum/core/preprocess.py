@@ -12,8 +12,7 @@ def do(file_path, index_info, use_caching):
     if is_cache:
         samples, feature_size = cache.load_cache(cache_path)
     else:
-        module = module_loader(index_info['module_info'])
-        feature_set = set(module.process(file_path))
+        feature_set = set(index_info['module'].process(file_path))
         feature_size = len(feature_set)
         if index_info['use_mod']:
             feature_set = reduce_the_feature_by_mod(feature_set, index_info['use_mod'])

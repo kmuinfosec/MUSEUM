@@ -1,5 +1,4 @@
 from museum.core.feature import Base
-
 import os
 
 
@@ -18,6 +17,10 @@ class AsymmetricExtremum(Base):
             file_bytes = f.read()
         chunk_list = self.bytes_ae(file_bytes, self.__dict__['window_size'])
         return list(set(chunk_list))
+
+    def get_info(self):
+        info = "AsymmetricExtremum(w={})".format(self.__dict__['window_size'])
+        return info
 
     def bytes_ae(self, byte_seq, window_size):
         bytes_len = len(byte_seq)

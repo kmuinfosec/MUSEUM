@@ -44,10 +44,10 @@ def get_multisearch_data(index_name, samples, limit):
     return json.dumps(header)+'\n'+json.dumps(body)
 
 
-def get_index_template(module, num_hash, use_smallest, use_mod, use_minmax, shards, replicas):
+def get_index_template(module, num_hash, use_smallest, use_mod, use_minmax, shards, replicas, interval):
     index_template = {
         "settings": {
-            "refresh_interval": "10s",
+            "refresh_interval": "{}s".format(interval),
             'number_of_shards': shards,
             'number_of_replicas': replicas,
             "similarity": {
@@ -69,6 +69,7 @@ def get_index_template(module, num_hash, use_smallest, use_mod, use_minmax, shar
                 'use_smallest': use_smallest,
                 'use_mod': use_mod,
                 'use_minmax': use_minmax,
+                'refresh_interval': interval
             },
             "dynamic": "strict",
             "properties": {

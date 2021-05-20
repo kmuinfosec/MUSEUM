@@ -5,3 +5,6 @@ class Base:
 
     def process(self, file_path):
         pass
+
+    def get_info(self):
+        pass

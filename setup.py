@@ -20,10 +20,10 @@ dependency_links = [
 
 setup(
     name='museum',
-    version='1.0',
+    version='1.1',
     description='Multifacted Search Engine Using MinHash Sampling',
     author='KMU Infosec',
-    author_email='m2019551@kookmin.ac.kr',
+    author_email='hurjn96@kookmin.ac.kr',
     packages=find_packages(),
     install_requires=install_requires,
     setup_requires=setup_requires,

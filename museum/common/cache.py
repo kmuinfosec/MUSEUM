@@ -32,7 +32,7 @@ def get_cache_file_path(md5, index_info):
         cache_dir = CACHE_MINMAX_DIR
     else:
         cache_dir = CACHE_INDEPENDENT_DIR
-    cache_name = '({}_{}){}'.format(index_info['num_hash'], index_info['module_info']['module_name'], md5)
+    cache_name = '({}_{}){}'.format(index_info['num_hash'], index_info['module'].get_info(), md5)
     cache_file_path = os.path.join(cache_dir, cache_name)
     return cache_file_path
 
