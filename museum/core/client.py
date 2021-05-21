@@ -1,10 +1,9 @@
-import tqdm
-
 from museum.core import preprocess
 from museum.data.elasticsearch.template import get_index_template, get_bulk_data, get_search_body, get_multisearch_data
 from museum.exception import *
 from museum.common.utils import *
 from museum.common.report import make_report_hits
+from tqdm import tqdm
 
 from elasticsearch import Elasticsearch, ConnectionTimeout
 import os
@@ -45,7 +44,7 @@ class MUSEUM:
             file_list = walk_directory(target)
         else:
             raise NotADirectoryError("{} is not a directory".format(target))
-        pbar = tqdm.tqdm(total=len(file_list), desc="Bulk index", disable=disable_tqdm)
+        pbar = tqdm(total=len(file_list), desc="Bulk index", disable=disable_tqdm)
         for jobs in batch_generator(file_list, batch_size):
             bulk_data_list = []
             for file_md5, samples, feature_size, file_name in mp_helper(preprocess.do, jobs, process_count,
@@ -82,7 +81,7 @@ class MUSEUM:
         else:
             raise NotADirectoryError("{} is not a directory".format(target))
         index_info = self.get_index_info(index_name)
-        pbar = tqdm.tqdm(total=len(file_list), disable=disable_tqdm, desc="Multiple search")
+        pbar = tqdm(total=len(file_list), disable=disable_tqdm, desc="Multiple search")
         for jobs in batch_generator(file_list, batch_size):
             search_data_list = []
             query_samples_list = []
