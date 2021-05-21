@@ -1,3 +1,5 @@
+import tqdm
+
 from museum.core import preprocess
 from museum.data.elasticsearch.template import get_index_template, get_bulk_data, get_search_body, get_multisearch_data
 from museum.exception import *
@@ -34,7 +36,7 @@ class MUSEUM:
         index_info['module'] = module_loader(index_info['module_info'])
         return index_info
 
-    def bulk(self, index_name, target, process_count=8, batch_size=10000):
+    def bulk(self, index_name, target, process_count=8, batch_size=10000, disable_tqdm=False):
         index_info = self.get_index_info(index_name)
 
         if type(target) is list or type(target) is set:
@@ -43,18 +45,17 @@ class MUSEUM:
             file_list = walk_directory(target)
         else:
             raise NotADirectoryError("{} is not a directory".format(target))
-
+        pbar = tqdm.tqdm(total=len(file_list), desc="Bulk index", disable=disable_tqdm)
         for jobs in batch_generator(file_list, batch_size):
             bulk_data_list = []
             for file_md5, samples, feature_size, file_name in mp_helper(preprocess.do, jobs, process_count,
                                                                         index_info=index_info,
-                                                                        use_caching=self.use_caching,
-                                                                        desc="bulk preprocess"):
+                                                                        use_caching=self.use_caching):
                 if samples:
                     bulk_data_list.append(get_bulk_data(file_md5, samples, feature_size, file_name, index_name))
-
+                pbar.update(len(bulk_data_list))
             self.es.bulk(body=bulk_data_list)
-
+        pbar.close()
         print("Waiting {} sec for index refresh".format(index_info["refresh_interval"]))
         time.sleep(int(index_info["refresh_interval"]))
 
@@ -73,7 +74,7 @@ class MUSEUM:
             report['hits'] = make_report_hits(response, query_samples, query_feature_size, index_info)
         return report
 
-    def multi_search(self, index_name, target, limit=1, process_count=1, batch_size=100):
+    def multi_search(self, index_name, target, limit=1, process_count=1, batch_size=100, disable_tqdm=False):
         if type(target) is list or type(target) is set:
             file_list = target
         elif type(target) is str and os.path.isdir(target):
@@ -81,6 +82,7 @@ class MUSEUM:
         else:
             raise NotADirectoryError("{} is not a directory".format(target))
         index_info = self.get_index_info(index_name)
+        pbar = tqdm.tqdm(total=len(file_list), disable=disable_tqdm, desc="Multiple search")
         for jobs in batch_generator(file_list, batch_size):
             search_data_list = []
             query_samples_list = []
@@ -88,8 +90,7 @@ class MUSEUM:
             file_name_list = []
             for _, query_samples, query_feature_size, file_name in mp_helper(preprocess.do, jobs, process_count,
                                                                              index_info=index_info,
-                                                                             use_caching=self.use_caching,
-                                                                             tqdm_disable=True):
+                                                                             use_caching=self.use_caching):
                 if query_samples:
                     search_data_list.append(get_multisearch_data(index_name, query_samples, limit))
                     query_samples_list.append(query_samples)
@@ -107,5 +108,6 @@ class MUSEUM:
                               'hits': make_report_hits(response, query_samples_list[i],
                                                        query_feature_size_list[i], index_info)}
                     report_list.append(report)
-
+            pbar.update(len(report_list))
             yield report_list
+        pbar.close()

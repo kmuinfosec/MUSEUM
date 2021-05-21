@@ -67,7 +67,7 @@ def batch_generator(file_list, batch_size):
         yield batch_job
 
 
-def mp_helper(worker, jobs, process_count=8, tqdm_disable=False, desc='', **kwargs):
+def mp_helper(worker, jobs, process_count=8, **kwargs):
     with Pool(processes=process_count) as pool:
-        for ret in tqdm(pool.imap(partial(worker, **kwargs), jobs), total=len(jobs), desc=desc, disable=tqdm_disable):
+        for ret in pool.imap(partial(worker, **kwargs), jobs):
             yield ret
