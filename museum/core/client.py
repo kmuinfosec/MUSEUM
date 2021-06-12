@@ -52,7 +52,7 @@ class MUSEUM:
                                                                         use_caching=self.use_caching):
                 if samples:
                     bulk_data_list.append(get_bulk_data(file_md5, samples, feature_size, file_name, index_name))
-                pbar.update(len(bulk_data_list))
+                pbar.update(1)
             self.es.bulk(body=bulk_data_list)
         pbar.close()
         print("Waiting {} sec for index refresh".format(index_info["refresh_interval"]))
