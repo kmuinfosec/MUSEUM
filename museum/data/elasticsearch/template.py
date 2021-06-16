@@ -1,7 +1,7 @@
 import json
 
 
-def get_bulk_data(file_md5, samples, feature_size, file_name, index_name):
+def get_bulk_request(file_md5, samples, feature_size, file_name, index_name):
     header = {'index': {"_index": index_name, '_id': file_md5}}
     body = {
         'data': list(samples),
@@ -27,7 +27,7 @@ def get_search_body(samples, limit):
     return search_body
 
 
-def get_multisearch_data(index_name, samples, limit):
+def get_msearch_request(index_name, samples, limit):
     header = {'index': index_name, 'search_type': 'dfs_query_then_fetch'}
     body = {
         "_source": True,

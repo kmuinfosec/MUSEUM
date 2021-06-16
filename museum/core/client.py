@@ -1,5 +1,5 @@
 from museum.core import preprocess
-from museum.data.elasticsearch.template import get_index_template, get_bulk_data, get_search_body, get_multisearch_data
+from museum.data.elasticsearch.template import get_index_template, get_bulk_request, get_search_body, get_msearch_request
 from museum.exception import *
 from museum.common.utils import *
 from museum.common.report import make_report_hits
@@ -18,7 +18,7 @@ class MUSEUM:
     def create_index(self, index, module, num_hash=128, use_smallest=False,
                      use_mod=False, use_minmax=False, shards=5, replicas=1, interval=10):
         if index == '':
-            raise BaseException("Index parameter is empty")
+            raise NotDefinedError("Index parameter is not passed")
         if self.es.indices.exists(index):
             raise AlreadyExistError("\"{}\" already exist index".format(index))
 
@@ -35,7 +35,7 @@ class MUSEUM:
         index_info['module'] = module_loader(index_info['module_info'])
         return index_info
 
-    def bulk(self, index_name, target, process_count=8, batch_size=10000, disable_tqdm=False):
+    def bulk(self, index_name, target, process_count=8, batch_size=10000, disable_tqdm=False, pass_indexed_file=False):
         index_info = self.get_index_info(index_name)
 
         if type(target) is list or type(target) is set:
@@ -45,15 +45,28 @@ class MUSEUM:
         else:
             raise NotADirectoryError("{} is not a directory".format(target))
         pbar = tqdm(total=len(file_list), desc="Bulk index", disable=disable_tqdm)
-        for jobs in batch_generator(file_list, batch_size):
-            bulk_data_list = []
-            for file_md5, samples, feature_size, file_name in mp_helper(preprocess.do, jobs, process_count,
-                                                                        index_info=index_info,
-                                                                        use_caching=self.use_caching):
-                if samples:
-                    bulk_data_list.append(get_bulk_data(file_md5, samples, feature_size, file_name, index_name))
+        for batch_file_list in batch_generator(file_list, batch_size):
+            if not pass_indexed_file:
+                remain_file_list = batch_file_list
+            else:
+                remain_file_list = []
+                for file_path in batch_file_list:
+                    md5 = os.path.splitext(os.path.split(file_path)[1])[0]
+                    if not self.es.exists(index_name, md5):
+                        remain_file_list.append(file_path)
+                    else:
+                        pbar.update(1)
+
+            bulk_body_list = []
+            for file_md5, sampled_data, feature_size, file_name in mp_helper(preprocess.do, remain_file_list,
+                                                                             process_count, index_info=index_info,
+                                                                             use_caching=self.use_caching):
+                if sampled_data:
+                    bulk_body_list.append(get_bulk_request(file_md5, sampled_data, feature_size, file_name, index_name))
                 pbar.update(1)
-            self.es.bulk(body=bulk_data_list)
+
+            if bulk_body_list:
+                self.es.bulk(body=bulk_body_list)
         pbar.close()
         print("Waiting {} sec for index refresh".format(index_info["refresh_interval"]))
         time.sleep(int(index_info["refresh_interval"]))
@@ -91,7 +104,7 @@ class MUSEUM:
                                                                              index_info=index_info,
                                                                              use_caching=self.use_caching):
                 if query_samples:
-                    search_data_list.append(get_multisearch_data(index_name, query_samples, limit))
+                    search_data_list.append(get_msearch_request(index_name, query_samples, limit))
                     query_samples_list.append(query_samples)
                     query_feature_size_list.append(query_feature_size)
                     file_name_list.append(file_name)
