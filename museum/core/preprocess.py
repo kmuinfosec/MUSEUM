@@ -1,15 +1,16 @@
 import os
 import hashlib
 
-from museum.common.utils import module_loader, get_file_md5
+from museum.common.utils import get_file_md5
 from museum.common import cache
 
 
-def do(file_path, index_info, use_caching):
+def action(file_path, index_info, use_caching):
     file_md5 = get_file_md5(file_path)
     file_name = os.path.split(file_path)[1]
-    is_cache, cache_path = cache.check_cached(file_md5, index_info)
-    if is_cache:
+    cache_path = cache.get_cache_file_path(file_md5, index_info)
+    is_cached = cache.check_cached(cache_path)
+    if is_cached:
         samples, feature_size = cache.load_cache(cache_path)
     else:
         feature_set = set(index_info['module'].process(file_path))

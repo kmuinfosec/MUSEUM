@@ -17,12 +17,11 @@ if not os.path.isdir(CACHE_INDEPENDENT_DIR):
     os.mkdir(CACHE_INDEPENDENT_DIR)
 
 
-def check_cached(md5, index_info):
-    cache_file_path = get_cache_file_path(md5, index_info)
-    if os.path.isfile(cache_file_path):
-        return True, cache_file_path
+def check_cached(cache_path):
+    if os.path.isfile(cache_path):
+        return True
     else:
-        return False, cache_file_path
+        return False
 
 
 def get_cache_file_path(md5, index_info):
@@ -32,8 +31,9 @@ def get_cache_file_path(md5, index_info):
         cache_dir = CACHE_MINMAX_DIR
     else:
         cache_dir = CACHE_INDEPENDENT_DIR
-    cache_name = '({}_{}){}'.format(index_info['num_hash'], index_info['module'].get_info(), md5)
-    cache_file_path = os.path.join(cache_dir, cache_name)
+    cache_dir = os.path.join(os.path.join(cache_dir, index_info['module'].get_info()), str(index_info['num_hash']))
+    cache_dir = os.path.join(os.path.join(cache_dir, md5[:2]), md5[2:4])
+    cache_file_path = os.path.join(cache_dir, md5)
     return cache_file_path
 
 

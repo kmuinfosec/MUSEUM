@@ -27,6 +27,19 @@ def get_search_body(samples, limit):
     return search_body
 
 
+def get_exists_request(index_name, md5):
+    header = {'index': index_name, 'search_type': 'dfs_query_then_fetch'}
+    body = {
+        "_source": False,
+        "query": {
+            "ids": {
+                "values": md5
+            }
+        }
+    }
+    return json.dumps(header)+'\n'+json.dumps(body)
+
+
 def get_msearch_request(index_name, samples, limit):
     header = {'index': index_name, 'search_type': 'dfs_query_then_fetch'}
     body = {

@@ -19,7 +19,7 @@ class AsymmetricExtremum(Base):
         return list(set(chunk_list))
 
     def get_info(self):
-        info = "AsymmetricExtremum(w={})".format(self.__dict__['window_size'])
+        info = "AsymmetricExtremum_w_{}".format(self.__dict__['window_size'])
         return info
 
     def bytes_ae(self, byte_seq, window_size):
