@@ -58,7 +58,7 @@ def batch_generator(file_list, batch_size):
         if len(file_list) % batch_size:
             batch_count = len(file_list) // batch_size + 1
         else:
-            batch_count = len(file_list) // batch_size + 1
+            batch_count = len(file_list) // batch_size
         for i in range(batch_count):
             batch_jobs.append(file_list[i * batch_size:(i + 1) * batch_size])
     else:
