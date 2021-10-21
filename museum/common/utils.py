@@ -6,7 +6,7 @@ from functools import partial
 from tqdm import tqdm
 from museum.module import *
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def get_file_md5(file_path):
