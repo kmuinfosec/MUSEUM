@@ -1,3 +1,5 @@
+import sys
+
 from museum.core import preprocess
 from museum.data.elasticsearch.template import get_index_template, get_bulk_request, get_search_body, \
     get_msearch_request, get_exists_request
@@ -46,7 +48,7 @@ class MUSEUM:
         else:
             raise NotADirectoryError("{} is not a directory".format(target))
 
-        pbar = tqdm(total=len(file_list), desc="Bulk index", disable=disable_tqdm)
+        pbar = tqdm(total=len(file_list), desc="Bulk index", disable=disable_tqdm, file=sys.stdout)
         for batch_file_list in batch_generator(file_list, batch_size):
             if not pass_indexed_files:
                 remain_file_list = batch_file_list
@@ -96,7 +98,7 @@ class MUSEUM:
         else:
             raise NotADirectoryError("{} is not a directory".format(target))
         index_info = self.get_index_info(index_name)
-        pbar = tqdm(total=len(file_list), disable=disable_tqdm, desc="Multiple search")
+        pbar = tqdm(total=len(file_list), disable=disable_tqdm, desc="Multiple search", file=sys.stdout)
         for jobs in batch_generator(file_list, batch_size):
             search_data_list = []
             query_samples_list = []
