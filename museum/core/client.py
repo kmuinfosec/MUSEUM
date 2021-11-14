@@ -82,7 +82,7 @@ class MUSEUM:
         if file_bytes is None:
             _, query_samples, query_feature_size, query_name = preprocess.by_file_path(file_path, index_info, self.use_caching)
         else:
-            _, query_samples, query_feature_size = preprocess.by_file_bytes(file_path, index_info)
+            _, query_samples, query_feature_size = preprocess.by_file_bytes(file_bytes, index_info)
 
         report = {'query': query_name, 'hits': []}
         if query_samples:
