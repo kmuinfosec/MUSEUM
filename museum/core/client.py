@@ -32,7 +32,7 @@ class MUSEUM:
         return res
 
     def get_index_info(self, index_name):
-        if not self.es.indices.exists(index_name):
+        if not self.es.indices.exists(index=index_name):
             raise NotExistError("Index does not exist")
         index_info = self.es.indices.get_mapping(index=index_name)[index_name]['mappings']['_meta']
         index_info['module'] = module_loader(index_info['module_info'])
@@ -83,14 +83,16 @@ class MUSEUM:
         print("Waiting {} sec for index refresh".format(index_info["refresh_interval"]))
         time.sleep(int(index_info["refresh_interval"]))
 
-    def search(self, index_name, target, query_name=None, limit=1, index_info=None):
+    def search(self, index_name, target, limit=1, index_info=None):
         if not index_info:
             index_info = self.get_index_info(index_name)
 
         if type(target) is str:
-            _, query_samples, query_feature_size, query_name = preprocess.by_file_path(target, index_info, self.use_caching)
+            preprocess_action = preprocess.by_file_path
         else:
-            _, query_samples, query_feature_size = preprocess.by_file_bytes(target, index_info)
+            preprocess_action = preprocess.by_file_bytes
+
+        _, query_samples, query_feature_size, query_name = preprocess_action(target, index_info, self.use_caching)
 
         report = {'query': query_name, 'hits': []}
         if query_samples:

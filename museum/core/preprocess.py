@@ -23,7 +23,7 @@ def by_file_path(file_path, index_info, use_caching):
     return file_md5, samples, feature_size, file_name
 
 
-def by_file_bytes(args, index_info):
+def by_file_bytes(args, index_info, use_caching=None):
     file_bytes, target_name = args
     bytes_md5 = get_bytes_md5(file_bytes)
     feature_set = set(index_info['module'].process(file_bytes=file_bytes))
