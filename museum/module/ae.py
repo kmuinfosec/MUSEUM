@@ -12,10 +12,11 @@ class AsymmetricExtremum(Base):
             raise Exception(msg)
         self.window_size = self.__dict__['window_size']
 
-    def process(self, file_path):
-        if not os.path.isfile(file_path):
-            error_msg = "{} does not exist".format(file_path)
-            raise Exception(error_msg)
+    def process(self, file_path, file_bytes=None):
+        if file_bytes is None:
+            if not os.path.isfile(file_path):
+                error_msg = "{} does not exist".format(file_path)
+                raise FileNotFoundError(error_msg)
         ae_dll = ctypes.CDLL(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ae_{}.dll'.format(platform.architecture()[0])))
         ae_chunking = ae_dll.ae_chunking
         ae_chunking.argtypes = (
@@ -26,8 +27,9 @@ class AsymmetricExtremum(Base):
         release = ae_dll.release
         release.argtypes = [ctypes.POINTER(ctypes.c_uint)]
         release.restype = None
-        with open(file_path, 'rb') as f:
-            file_bytes = f.read()
+        if file_bytes is None:
+            with open(file_path, 'rb') as f:
+                file_bytes = f.read()
         anchor_arr = ctypes.POINTER(ctypes.c_uint)()
         len_anchor_arr = ae_chunking(file_bytes, len(file_bytes), anchor_arr, file_path.encode(), self.window_size)
 

@@ -1,11 +1,11 @@
 import os
 import hashlib
 
-from museum.common.utils import get_file_md5
+from museum.common.utils import get_file_md5, get_bytes_md5
 from museum.common import cache
 
 
-def action(file_path, index_info, use_caching):
+def by_file_path(file_path, index_info, use_caching):
     file_md5 = get_file_md5(file_path)
     file_name = os.path.split(file_path)[1]
     cache_path = cache.get_cache_file_path(file_md5, index_info)
@@ -21,6 +21,16 @@ def action(file_path, index_info, use_caching):
         if use_caching:
             cache.make_cache(cache_path, samples, feature_size)
     return file_md5, samples, feature_size, file_name
+
+
+def by_file_bytes(file_bytes, index_info):
+    bytes_md5 = get_bytes_md5(file_bytes)
+    feature_set = set(index_info['module'].process(file_bytes=file_bytes))
+    feature_size = len(feature_set)
+    if index_info['use_mod']:
+        feature_set = reduce_the_feature_by_mod(feature_set, index_info['use_mod'])
+    samples = minhash(feature_set, index_info['num_hash'], index_info['use_smallest'], index_info['use_minmax'])
+    return bytes_md5, samples, feature_size
 
 
 def minhash(feature_set, num_hash, use_smallest, use_min_max):

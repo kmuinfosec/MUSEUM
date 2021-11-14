@@ -15,6 +15,10 @@ def get_file_md5(file_path):
     return hashlib.md5(bytes_data).hexdigest()
 
 
+def get_bytes_md5(file_bytes):
+    return hashlib.md5(file_bytes).hexdigest()
+
+
 def module_loader(module_info):
     module_name = module_info['module_name']
     klass = globals()[module_name]

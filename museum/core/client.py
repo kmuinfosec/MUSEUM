@@ -62,7 +62,7 @@ class MUSEUM:
                         pbar.update(1)
 
             bulk_body_list = []
-            for file_md5, sampled_data, feature_size, file_name in mp_helper(preprocess.action, remain_file_list,
+            for file_md5, sampled_data, feature_size, file_name in mp_helper(preprocess.by_file_path, remain_file_list,
                                                                              process_count, index_info=index_info,
                                                                              use_caching=self.use_caching):
                 if sampled_data:
@@ -75,12 +75,16 @@ class MUSEUM:
         print("Waiting {} sec for index refresh".format(index_info["refresh_interval"]))
         time.sleep(int(index_info["refresh_interval"]))
 
-    def search(self, index_name, file_path, limit=1, index_info=None):
+    def search(self, index_name, file_path, file_bytes=None, query_name=None, limit=1, index_info=None):
         if not index_info:
             index_info = self.get_index_info(index_name)
-        _, query_samples, query_feature_size, file_name = preprocess.action(file_path, index_info, self.use_caching)
 
-        report = {'query': file_name, 'hits': []}
+        if file_bytes is None:
+            _, query_samples, query_feature_size, query_name = preprocess.by_file_path(file_path, index_info, self.use_caching)
+        else:
+            _, query_samples, query_feature_size = preprocess.by_file_bytes(file_path, index_info)
+
+        report = {'query': query_name, 'hits': []}
         if query_samples:
             try:
                 response = self.es.search(index=index_name, body=get_search_body(query_samples, limit), search_type='dfs_query_then_fetch')
