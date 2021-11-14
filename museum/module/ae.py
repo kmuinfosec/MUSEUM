@@ -22,7 +22,7 @@ class AsymmetricExtremum(Base):
         ae_chunking = ae_dll.ae_chunking
         ae_chunking.argtypes = (
             ctypes.c_char_p, ctypes.c_ulong,
-            ctypes.POINTER(ctypes.POINTER(ctypes.c_uint)), ctypes.c_char_p, ctypes.c_uint
+            ctypes.POINTER(ctypes.POINTER(ctypes.c_uint)), ctypes.c_uint
         )
         ae_chunking.restype = ctypes.c_uint
         release = ae_dll.release
@@ -32,7 +32,7 @@ class AsymmetricExtremum(Base):
             with open(file_path, 'rb') as f:
                 file_bytes = f.read()
         anchor_arr = ctypes.POINTER(ctypes.c_uint)()
-        len_anchor_arr = ae_chunking(file_bytes, len(file_bytes), anchor_arr, file_path.encode(), self.window_size)
+        len_anchor_arr = ae_chunking(file_bytes, len(file_bytes), anchor_arr, self.window_size)
 
         last_anchor = 0
         chunk_list = []
