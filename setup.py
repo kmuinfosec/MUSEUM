@@ -12,7 +12,7 @@ install_requires = [
     'python-dateutil==2.8.1',
     'six==1.15.0',
     'tqdm==4.50.0',
-    'urllib3==1.25.10'
+    'urllib3==1.26.5'
 ]
 
 dependency_links = [
