@@ -3,7 +3,7 @@ class Base:
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-    def process(self, file_path, file_bytes=None):
+    def process(self, file_path=None, file_bytes=None):
         pass
 
     def get_info(self):

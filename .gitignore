@@ -22,3 +22,7 @@ demo.py
 sampling.py
 virussign_unzip.py
 move.py
+
+build/
+dist/
+museum.egg-info/
