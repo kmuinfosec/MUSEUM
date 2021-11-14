@@ -41,32 +41,40 @@ class MUSEUM:
     def bulk(self, index_name, target, process_count=8, batch_size=10000, disable_tqdm=False, pass_indexed_files=False):
         index_info = self.get_index_info(index_name)
 
-        if type(target) is list or type(target) is set:
-            file_list = target
+        if type(target) is list and type(target[0]) is list:
+            target_mode = 'file_bytes'
+        elif type(target) is list and type(target[0]) is str:
+            target_mode = 'file_path'
         elif type(target) is str and os.path.isdir(target):
-            file_list = walk_directory(target)
+            target = walk_directory(target)
+            target_mode = 'file_path'
         else:
             raise NotADirectoryError("{} is not a directory".format(target))
 
-        pbar = tqdm(total=len(file_list), desc="Bulk index", disable=disable_tqdm, file=sys.stdout)
-        for batch_file_list in batch_generator(file_list, batch_size):
-            if not pass_indexed_files:
-                remain_file_list = batch_file_list
-            else:
+        pbar = tqdm(total=len(target), desc="Bulk index", disable=disable_tqdm, file=sys.stdout)
+        for batch_target_list in batch_generator(target, batch_size):
+            if pass_indexed_files and target_mode == 'file_path':
                 remain_file_list = []
-                exist_md5_set = self.__check_exists(index_name, batch_file_list)
-                for file_path in batch_file_list:
+                exist_md5_set = self.__check_exists(index_name, batch_target_list)
+                for file_path in batch_target_list:
                     if not os.path.splitext(os.path.split(file_path)[1])[0] in exist_md5_set:
                         remain_file_list.append(file_path)
                     else:
                         pbar.update(1)
+            else:
+                remain_file_list = batch_target_list
 
             bulk_body_list = []
-            for file_md5, sampled_data, feature_size, file_name in mp_helper(preprocess.by_file_path, remain_file_list,
+            if target_mode == 'file_path':
+                preprocess_action = preprocess.by_file_path
+            else:
+                preprocess_action = preprocess.by_file_bytes
+
+            for file_md5, sampled_data, feature_size, target_name in mp_helper(preprocess_action, remain_file_list,
                                                                              process_count, index_info=index_info,
                                                                              use_caching=self.use_caching):
                 if sampled_data:
-                    bulk_body_list.append(get_bulk_request(file_md5, sampled_data, feature_size, file_name, index_name))
+                    bulk_body_list.append(get_bulk_request(file_md5, sampled_data, feature_size, target_name, index_name))
                 pbar.update(1)
 
             if bulk_body_list:
@@ -75,17 +83,14 @@ class MUSEUM:
         print("Waiting {} sec for index refresh".format(index_info["refresh_interval"]))
         time.sleep(int(index_info["refresh_interval"]))
 
-    def search(self, index_name, file_path=None, file_bytes=None, query_name=None, limit=1, index_info=None):
-        if file_path is None and file_bytes is None:
-            raise AttributeError("Please enter either file_path or file_bytes")
-
+    def search(self, index_name, target, query_name=None, limit=1, index_info=None):
         if not index_info:
             index_info = self.get_index_info(index_name)
 
-        if file_path is not None:
-            _, query_samples, query_feature_size, query_name = preprocess.by_file_path(file_path, index_info, self.use_caching)
+        if type(target) is str:
+            _, query_samples, query_feature_size, query_name = preprocess.by_file_path(target, index_info, self.use_caching)
         else:
-            _, query_samples, query_feature_size = preprocess.by_file_bytes(file_bytes, index_info)
+            _, query_samples, query_feature_size = preprocess.by_file_bytes(target, index_info)
 
         report = {'query': query_name, 'hits': []}
         if query_samples:

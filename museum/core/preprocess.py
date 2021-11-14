@@ -23,14 +23,15 @@ def by_file_path(file_path, index_info, use_caching):
     return file_md5, samples, feature_size, file_name
 
 
-def by_file_bytes(file_bytes, index_info):
+def by_file_bytes(args, index_info):
+    file_bytes, target_name = args
     bytes_md5 = get_bytes_md5(file_bytes)
     feature_set = set(index_info['module'].process(file_bytes=file_bytes))
     feature_size = len(feature_set)
     if index_info['use_mod']:
         feature_set = reduce_the_feature_by_mod(feature_set, index_info['use_mod'])
     samples = minhash(feature_set, index_info['num_hash'], index_info['use_smallest'], index_info['use_minmax'])
-    return bytes_md5, samples, feature_size
+    return bytes_md5, samples, feature_size, target_name
 
 
 def minhash(feature_set, num_hash, use_smallest, use_min_max):
