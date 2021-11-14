@@ -75,11 +75,14 @@ class MUSEUM:
         print("Waiting {} sec for index refresh".format(index_info["refresh_interval"]))
         time.sleep(int(index_info["refresh_interval"]))
 
-    def search(self, index_name, file_path, file_bytes=None, query_name=None, limit=1, index_info=None):
+    def search(self, index_name, file_path=None, file_bytes=None, query_name=None, limit=1, index_info=None):
+        if file_path is None and file_bytes is None:
+            raise AttributeError("Please enter either file_path or file_bytes")
+
         if not index_info:
             index_info = self.get_index_info(index_name)
 
-        if file_bytes is None:
+        if file_path is not None:
             _, query_samples, query_feature_size, query_name = preprocess.by_file_path(file_path, index_info, self.use_caching)
         else:
             _, query_samples, query_feature_size = preprocess.by_file_bytes(file_bytes, index_info)
