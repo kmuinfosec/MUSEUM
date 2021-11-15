@@ -42,18 +42,18 @@ class MUSEUM:
         index_info = self.get_index_info(index_name)
 
         if type(target) is list and type(target[0]) is list:
-            target_mode = 'file_bytes'
+            preprocess_action = preprocess.by_file_bytes
         elif type(target) is list and type(target[0]) is str:
-            target_mode = 'file_path'
+            preprocess_action = preprocess.by_file_path
         elif type(target) is str and os.path.isdir(target):
             target = walk_directory(target)
-            target_mode = 'file_path'
+            preprocess_action = preprocess.by_file_path
         else:
             raise NotADirectoryError("{} is not a directory".format(target))
 
         pbar = tqdm(total=len(target), desc="Bulk index", disable=disable_tqdm, file=sys.stdout)
         for batch_target_list in batch_generator(target, batch_size):
-            if pass_indexed_files and target_mode == 'file_path':
+            if pass_indexed_files and preprocess_action == preprocess.by_file_path:
                 remain_file_list = []
                 exist_md5_set = self.__check_exists(index_name, batch_target_list)
                 for file_path in batch_target_list:
@@ -65,11 +65,6 @@ class MUSEUM:
                 remain_file_list = batch_target_list
 
             bulk_body_list = []
-            if target_mode == 'file_path':
-                preprocess_action = preprocess.by_file_path
-            else:
-                preprocess_action = preprocess.by_file_bytes
-
             for file_md5, sampled_data, feature_size, target_name in mp_helper(preprocess_action, remain_file_list,
                                                                              process_count, index_info=index_info,
                                                                              use_caching=self.use_caching):
