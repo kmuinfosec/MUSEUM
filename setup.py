@@ -28,5 +28,9 @@ setup(
     install_requires=install_requires,
     setup_requires=setup_requires,
     dependency_links=dependency_links,
-    data_files=[('museum/module', ['museum/module/ae_32bit.dll', 'museum/module/ae_64bit.dll'])]
+    data_files=[('museum/module', [
+        'museum/module/ae_32bit_windows.dll',
+        'museum/module/ae_64bit_windows.dll',
+        'museum/module/ae_64bit_linux.so'
+    ])]
 )
