@@ -18,7 +18,19 @@ class AsymmetricExtremum(Base):
         if file_path is not None and not os.path.isfile(file_path):
             error_msg = "{} does not exist".format(file_path)
             raise FileNotFoundError(error_msg)
-        ae_dll = ctypes.CDLL(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ae_{}.dll'.format(platform.architecture()[0])))
+        module_base_path = os.path.dirname(os.path.abspath(__file__))
+        lib_path = None
+        if 'Windows' == platform.system():  # 윈도우 운영체제에서 c 모듈 로드
+            if platform.architecture()[0] == '64bit':
+                lib_path = os.path.join(module_base_path, 'ae_64bit_windows.dll')
+            elif platform.architecture()[0] == '32bit':
+                lib_path = os.path.join(module_base_path, 'ae_32bit_windows.dll')
+        elif 'Linux' == platform.system():  # 리눅스 운영체제에서 c 모듈 로드
+            if platform.architecture()[0] == '64bit':
+                lib_path = os.path.join(module_base_path, 'ae_64bit_linux.so')
+        if lib_path is None:
+            raise OSError()
+        ae_dll = ctypes.CDLL(lib_path)
         ae_chunking = ae_dll.ae_chunking
         ae_chunking.argtypes = (
             ctypes.c_char_p, ctypes.c_ulong,

@@ -75,8 +75,8 @@ class MUSEUM:
             if bulk_body_list:
                 self.es.bulk(body=bulk_body_list)
         pbar.close()
-        print("Waiting {} sec for index refresh".format(index_info["refresh_interval"]))
-        time.sleep(int(index_info["refresh_interval"]))
+        # print("Waiting {} sec for index refresh".format(index_info["refresh_interval"]))
+        # time.sleep(int(index_info["refresh_interval"]))
 
     def search(self, index_name, target, limit=1, index_info=None):
         if not index_info:
