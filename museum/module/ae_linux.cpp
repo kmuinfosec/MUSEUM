@@ -3,10 +3,9 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#define API __declspec(dllexport) // Windows-specific export
 
 // Must pass double[4] array...
-extern "C" API unsigned int ae_chunking(const char* buffer, unsigned long length, unsigned int** anchorArrPointer, const char* filePath, const unsigned int windowSize) {
+extern "C" unsigned int ae_chunking(const char* buffer, unsigned long length, unsigned int** anchorArrPointer, const unsigned int windowSize) {
 	std::vector<unsigned int> anchorVec;
 	unsigned int cursorIdx = 0;
 	unsigned int lastCursorIdx = 0;
@@ -42,6 +41,6 @@ extern "C" API unsigned int ae_chunking(const char* buffer, unsigned long length
 	return anchorVec.size();
 }
 
-extern "C" API void release(unsigned int* anchorArrPointer) {
+extern "C" void release(unsigned int* anchorArrPointer) {
 	free(anchorArrPointer);
 }
