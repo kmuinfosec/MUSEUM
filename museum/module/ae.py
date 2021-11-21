@@ -32,7 +32,7 @@ class AsymmetricExtremum(Base):
             raise OSError()
         ae_lib = ctypes.CDLL(lib_path)
         if file_path is not None:
-            ae_chunking = ae_lib.ae_chunking
+            ae_chunking = ae_lib.ae_chunking_from_path
             ae_chunking.argtypes = (
                 ctypes.c_char_p, ctypes.POINTER(ctypes.POINTER(ctypes.c_uint)), ctypes.c_uint
             )
