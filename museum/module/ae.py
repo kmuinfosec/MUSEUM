@@ -31,16 +31,25 @@ class AsymmetricExtremum(Base):
         if lib_path is None:
             raise OSError()
         ae_lib = ctypes.CDLL(lib_path)
-        ae_chunking = ae_lib.ae_chunking
-        ae_chunking.argtypes = (
-            ctypes.c_char_p, ctypes.POINTER(ctypes.POINTER(ctypes.c_uint)), ctypes.c_uint
-        )
+        if file_path is not None:
+            ae_chunking = ae_lib.ae_chunking
+            ae_chunking.argtypes = (
+                ctypes.c_char_p, ctypes.POINTER(ctypes.POINTER(ctypes.c_uint)), ctypes.c_uint
+            )
+        else:
+            ae_chunking = ae_lib.ae_chunking_from_bytes
+            ae_chunking.argtypes = (
+                ctypes.c_char_p, ctypes.c_uint, ctypes.POINTER(ctypes.POINTER(ctypes.c_uint)), ctypes.c_uint
+            )
         ae_chunking.restype = ctypes.c_uint
         release = ae_lib.release
         release.argtypes = [ctypes.POINTER(ctypes.c_uint)]
         release.restype = None
         anchor_arr = ctypes.POINTER(ctypes.c_uint)()
-        len_anchor_arr = ae_chunking(file_path, anchor_arr, self.window_size)
+        if file_path is not None:
+            len_anchor_arr = ae_chunking(file_path.encode(), anchor_arr, self.window_size)
+        else:
+            len_anchor_arr = ae_chunking(file_bytes, len(file_bytes), anchor_arr, self.window_size)
 
         last_anchor = 0
         chunk_list = []
