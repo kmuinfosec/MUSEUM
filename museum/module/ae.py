@@ -30,21 +30,17 @@ class AsymmetricExtremum(Base):
                 lib_path = os.path.join(module_base_path, 'ae_64bit_linux.so')
         if lib_path is None:
             raise OSError()
-        ae_dll = ctypes.CDLL(lib_path)
-        ae_chunking = ae_dll.ae_chunking
+        ae_lib = ctypes.CDLL(lib_path)
+        ae_chunking = ae_lib.ae_chunking
         ae_chunking.argtypes = (
-            ctypes.c_char_p, ctypes.c_ulong,
-            ctypes.POINTER(ctypes.POINTER(ctypes.c_uint)), ctypes.c_uint
+            ctypes.c_char_p, ctypes.POINTER(ctypes.POINTER(ctypes.c_uint)), ctypes.c_uint
         )
         ae_chunking.restype = ctypes.c_uint
-        release = ae_dll.release
+        release = ae_lib.release
         release.argtypes = [ctypes.POINTER(ctypes.c_uint)]
         release.restype = None
-        if file_path is not None:
-            with open(file_path, 'rb') as f:
-                file_bytes = f.read()
         anchor_arr = ctypes.POINTER(ctypes.c_uint)()
-        len_anchor_arr = ae_chunking(file_bytes, len(file_bytes), anchor_arr, self.window_size)
+        len_anchor_arr = ae_chunking(file_path, anchor_arr, self.window_size)
 
         last_anchor = 0
         chunk_list = []
@@ -53,8 +49,6 @@ class AsymmetricExtremum(Base):
             last_anchor = anchor_arr[i]
         release(anchor_arr)
         return chunk_list
-        # chunk_list = self.bytes_ae(file_bytes, self.__dict__['window_size'])
-        # return list(set(chunk_list))
 
     def get_info(self):
         info = "AsymmetricExtremum_w_{}".format(self.__dict__['window_size'])

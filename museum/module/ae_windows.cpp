@@ -1,12 +1,37 @@
-// Type your code here, or load an example.
-
 #include <vector>
 #include <string>
 #include <fstream>
+
 #define API __declspec(dllexport) // Windows-specific export
 
-// Must pass double[4] array...
-extern "C" API unsigned int ae_chunking(const char* buffer, unsigned long length, unsigned int** anchorArrPointer, const unsigned int windowSize) {
+bool ReadFile(std::string filePath, unsigned char **_data, unsigned int *datalen)
+{
+	std::ifstream is(filePath, std::ifstream::binary);
+	if (is) {
+		// seekg를 이용한 파일 크기 추출
+		is.seekg(0, is.end);
+		int length = (int)is.tellg();
+		is.seekg(0, is.beg);
+
+		// malloc으로 메모리 할당
+		unsigned char * buffer = (unsigned char*)malloc(length);
+
+		// read data as a block:
+		is.read((char*)buffer, length);
+		is.close();
+		*_data = buffer;
+		*datalen = length;
+	}
+
+	return true;
+}
+
+
+extern "C" API unsigned int ae_chunking(const char* filePath, unsigned int** anchorArrPointer, const unsigned int windowSize) {
+    unsigned char* buffer;
+    unsigned int length;
+    ReadFile(std::string(filePath), &buffer, &length);
+
 	std::vector<unsigned int> anchorVec;
 	unsigned int cursorIdx = 0;
 	unsigned int lastCursorIdx = 0;
