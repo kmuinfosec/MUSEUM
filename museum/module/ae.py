@@ -53,6 +53,9 @@ class AsymmetricExtremum(Base):
 
         last_anchor = 0
         chunk_list = []
+        if file_bytes is None and file_path is not None:
+            with open(file_path, 'rb') as f:
+                file_bytes = f.read()
         for i in range(len_anchor_arr):
             chunk_list.append(file_bytes[last_anchor:anchor_arr[i]])
             last_anchor = anchor_arr[i]
