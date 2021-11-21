@@ -4,6 +4,52 @@ import ctypes
 import platform
 
 
+def check_arguments(file_path, file_bytes):
+    if file_path is None and file_bytes is None:
+        raise AttributeError("Please enter either file_path or file_bytes")
+    if file_path is not None and not os.path.isfile(file_path):
+        error_msg = "{} does not exist".format(file_path)
+        raise FileNotFoundError(error_msg)
+
+
+def get_library_path():
+    module_base_path = os.path.dirname(os.path.abspath(__file__))
+    lib_path = None
+    if 'Windows' == platform.system():  # 윈도우 운영체제에서 c 모듈 로드
+        if platform.architecture()[0] == '64bit':
+            lib_path = os.path.join(module_base_path, 'ae_64bit_windows.dll')
+        elif platform.architecture()[0] == '32bit':
+            lib_path = os.path.join(module_base_path, 'ae_32bit_windows.dll')
+    elif 'Linux' == platform.system():  # 리눅스 운영체제에서 c 모듈 로드
+        if platform.architecture()[0] == '64bit':
+            lib_path = os.path.join(module_base_path, 'ae_64bit_linux.so')
+    if lib_path is None:
+        raise OSError()
+    return lib_path
+
+
+def get_ae_chunking_func(ae_lib, file_path, file_bytes):
+    if file_path is not None:
+        ae_chunking = ae_lib.ae_chunking_from_path
+        ae_chunking.argtypes = (
+            ctypes.c_char_p, ctypes.POINTER(ctypes.POINTER(ctypes.c_uint)), ctypes.c_uint
+        )
+    else:
+        ae_chunking = ae_lib.ae_chunking_from_bytes
+        ae_chunking.argtypes = (
+            ctypes.c_char_p, ctypes.c_uint, ctypes.POINTER(ctypes.POINTER(ctypes.c_uint)), ctypes.c_uint
+        )
+    ae_chunking.restype = ctypes.c_uint
+    return ae_chunking
+
+
+def get_release_func(ae_lib):
+    release = ae_lib.release
+    release.argtypes = [ctypes.POINTER(ctypes.c_uint)]
+    release.restype = None
+    return release
+
+
 class AsymmetricExtremum(Base):
     def __int__(self, **kwargs):
         super().__init__(**kwargs)
@@ -11,55 +57,29 @@ class AsymmetricExtremum(Base):
             msg = "Parameter 'window_size' must be passed"
             raise Exception(msg)
         self.window_size = self.__dict__['window_size']
+        self.ae_lib = ctypes.CDLL(get_library_path())
 
     def process(self, file_path=None, file_bytes=None):
-        if file_path is None and file_bytes is None:
-            raise AttributeError("Please enter either file_path or file_bytes")
-        if file_path is not None and not os.path.isfile(file_path):
-            error_msg = "{} does not exist".format(file_path)
-            raise FileNotFoundError(error_msg)
-        module_base_path = os.path.dirname(os.path.abspath(__file__))
-        lib_path = None
-        if 'Windows' == platform.system():  # 윈도우 운영체제에서 c 모듈 로드
-            if platform.architecture()[0] == '64bit':
-                lib_path = os.path.join(module_base_path, 'ae_64bit_windows.dll')
-            elif platform.architecture()[0] == '32bit':
-                lib_path = os.path.join(module_base_path, 'ae_32bit_windows.dll')
-        elif 'Linux' == platform.system():  # 리눅스 운영체제에서 c 모듈 로드
-            if platform.architecture()[0] == '64bit':
-                lib_path = os.path.join(module_base_path, 'ae_64bit_linux.so')
-        if lib_path is None:
-            raise OSError()
-        ae_lib = ctypes.CDLL(lib_path)
-        if file_path is not None:
-            ae_chunking = ae_lib.ae_chunking_from_path
-            ae_chunking.argtypes = (
-                ctypes.c_char_p, ctypes.POINTER(ctypes.POINTER(ctypes.c_uint)), ctypes.c_uint
-            )
-        else:
-            ae_chunking = ae_lib.ae_chunking_from_bytes
-            ae_chunking.argtypes = (
-                ctypes.c_char_p, ctypes.c_uint, ctypes.POINTER(ctypes.POINTER(ctypes.c_uint)), ctypes.c_uint
-            )
-        ae_chunking.restype = ctypes.c_uint
-        release = ae_lib.release
-        release.argtypes = [ctypes.POINTER(ctypes.c_uint)]
-        release.restype = None
+        check_arguments(file_path, file_bytes)
+
+        ae_chunking_func = get_ae_chunking_func(self.ae_lib, file_path, file_bytes)
+        release_func = get_release_func(self.ae_lib)
+
         anchor_arr = ctypes.POINTER(ctypes.c_uint)()
         if file_path is not None:
-            len_anchor_arr = ae_chunking(file_path.encode(), anchor_arr, self.window_size)
+            len_anchor_arr = ae_chunking_func(file_path.encode(), anchor_arr, self.window_size)
         else:
-            len_anchor_arr = ae_chunking(file_bytes, len(file_bytes), anchor_arr, self.window_size)
+            len_anchor_arr = ae_chunking_func(file_bytes, len(file_bytes), anchor_arr, self.window_size)
 
-        last_anchor = 0
         chunk_list = []
+        last_anchor = 0
         if file_bytes is None and file_path is not None:
             with open(file_path, 'rb') as f:
                 file_bytes = f.read()
         for i in range(len_anchor_arr):
             chunk_list.append(file_bytes[last_anchor:anchor_arr[i]])
             last_anchor = anchor_arr[i]
-        release(anchor_arr)
+        release_func(anchor_arr)
         return chunk_list
 
     def get_info(self):
