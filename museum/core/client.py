@@ -100,20 +100,24 @@ class MUSEUM:
         return report
 
     def multi_search(self, index_name, target, limit=1, process_count=1, batch_size=100, disable_tqdm=False):
-        if type(target) is list or type(target) is set:
-            file_list = target
+        if type(target) is list and type(target[0]) is list:
+            preprocess_action = preprocess.by_file_bytes
+        elif type(target) is list and type(target[0]) is str:
+            preprocess_action = preprocess.by_file_path
         elif type(target) is str and os.path.isdir(target):
-            file_list = walk_directory(target)
+            target = walk_directory(target)
+            preprocess_action = preprocess.by_file_path
         else:
             raise NotADirectoryError("{} is not a directory".format(target))
+
         index_info = self.get_index_info(index_name)
-        pbar = tqdm(total=len(file_list), disable=disable_tqdm, desc="Multiple search", file=sys.stdout)
-        for jobs in batch_generator(file_list, batch_size):
+        pbar = tqdm(total=len(target), disable=disable_tqdm, desc="Multiple search", file=sys.stdout)
+        for jobs in batch_generator(target, batch_size):
             search_data_list = []
             query_samples_list = []
             query_feature_size_list = []
             file_name_list = []
-            for _, query_samples, query_feature_size, file_name in mp_helper(preprocess.action, jobs, process_count,
+            for _, query_samples, query_feature_size, file_name in mp_helper(preprocess_action, jobs, process_count,
                                                                              index_info=index_info,
                                                                              use_caching=self.use_caching):
                 if query_samples:
