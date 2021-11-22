@@ -51,19 +51,18 @@ def get_release_func(ae_lib):
 
 
 class AsymmetricExtremum(Base):
-    def __int__(self, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if 'window_size' not in self.__dict__:
             msg = "Parameter 'window_size' must be passed"
             raise Exception(msg)
         self.window_size = self.__dict__['window_size']
-        self.ae_lib = ctypes.CDLL(get_library_path())
 
     def process(self, file_path=None, file_bytes=None):
         check_arguments(file_path, file_bytes)
-
-        ae_chunking_func = get_ae_chunking_func(self.ae_lib, file_path, file_bytes)
-        release_func = get_release_func(self.ae_lib)
+        ae_lib = ctypes.CDLL(get_library_path())
+        ae_chunking_func = get_ae_chunking_func(ae_lib, file_path, file_bytes)
+        release_func = get_release_func(ae_lib)
 
         anchor_arr = ctypes.POINTER(ctypes.c_uint)()
         if file_path is not None:
