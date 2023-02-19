@@ -1,23 +1,23 @@
-from museum import MUSEUM
-from museum.module import AsymmetricExtremum
+import time
 
+from museum import api
 
-INDEX_DIR = r'D:\indexDir'
-SEARCH_DIR = r'C:\searchDir'
-INDEX_NAME = 'test'
-ES_HOST = 'localhost'
-ES_PORT = 9200
 
 if __name__ == '__main__':
-    ms = MUSEUM(host=ES_HOST, port=ES_PORT, use_caching=False)
+    es_host = 'http://localhost:9200'
+    index_dir = r'C:\index_dir'
+    search_dir = r'C:\search_dir'
+    search_file = r'C:\test.pdf'
+    index_name = 'test'
 
-    ms.create_index(INDEX_NAME, AsymmetricExtremum(window_size=128), num_hash=128)
-    ms.bulk(INDEX_NAME, INDEX_DIR, process_count=8)
+    # api.delete_index(es_host, index_name)
+    api.create_index(es_host, index_name, 'ae', module_params={'window_size': 128}, num_hash=64)
+    api.bulk(es_host, index_name, index_dir, process=2)
+    time.sleep(6)
 
-    for report_list in ms.multi_search(INDEX_NAME, SEARCH_DIR, limit=1, process_count=8):
-        ############################
-        # TODO: Process the report
-        ############################
+    for report_list in api.msearch(es_host, index_name, search_dir, limit=1, process=2, disable_tqdm=True):
         for report in report_list:
             print(report)
-        input()
+
+    report = api.search(es_host, index_name, search_file)
+    print(report)

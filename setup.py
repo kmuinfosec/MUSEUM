@@ -1,27 +1,22 @@
+from distutils.core import Extension
 from setuptools import setup, find_packages
 
-setup_requires = [
-    ]
+cext_mod = Extension("museum.cext", sources=['museum/module/lib/ae.cpp'])
 
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
-
-dependency_links = [
-    ]
-
-setup(
-    name='museum',
-    version='1.1',
-    description='Multifacted Search Engine Using MinHash Sampling',
-    author='KMU Infosec',
-    author_email='hurjn96@kookmin.ac.kr',
-    packages=find_packages(),
-    install_requires=required,
-    setup_requires=setup_requires,
-    dependency_links=dependency_links,
-    data_files=[('museum/module', [
-        'museum/module/ae_32bit_windows.dll',
-        'museum/module/ae_64bit_windows.dll',
-        'museum/module/ae_64bit_linux.so'
-    ])]
+setup(name="museum",
+      version="2.0",
+      packages=find_packages(),
+      install_requires=[
+            'cycler==0.11.0',
+            'elasticsearch==8.6.2',
+            'kiwisolver==1.4.4',
+            'numpy==1.24.2',
+            'pyparsing==3.0.9',
+            'python-dateutil==2.8.2',
+            'six==1.16.0',
+            'tqdm==4.64.1',
+            'urllib3==1.26.14',
+      ],
+      ext_modules=[cext_mod],
+      description="Scalable and Multifaceted Search and Its Application for Binary Malware Files"
 )
