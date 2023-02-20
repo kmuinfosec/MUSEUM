@@ -1,0 +1,81 @@
+{% extends "search/index_base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h1>Search</h1>
+    <div class="row mt-5">
+        <div class="input-group input-group-lg">
+            <span class="input-group-text" id="inputGroup-sizing-lg">File path</span>
+            <input name="file-path" type="text" class="form-control" placeholder="ex) C:\search_dir\test.pdf" aria-label="" aria-describedby="inputGroup-sizing-lg">
+            <button class="btn btn-outline-secondary" type="button" id="button-submit-search">submit</button>
+        </div>
+    </div>
+
+    <h3 class="mt-5">Report</h3>
+    <dl class="row mt-5" id="div-report">
+        <div class="col-12">No result</div>
+    </dl>
+</div>
+
+
+<script>
+$(function() {
+    $("#button-submit-search").on("click", function() {
+        var file_path = $('input[name=file-path]').val();
+        $('#spinner-div').show();
+        $.ajax({
+            url: "{% url 'search:index_search' index_name=index_info.index_name %}",
+            data: { csrfmiddlewaretoken: '{{ csrf_token }}', file_path: file_path },
+            method: "POST",
+            dataType: "json"
+        })
+        .done(function(res) {
+            drawReport(res.report);
+            $('input[name=file-path]').val("");
+        })
+        .fail(function(xhr, status, errorThrown) {
+            alert("요청 실패!\n올바른 로컬 파일 경로가 아닙니다.");
+        })
+        .always(function() {
+            $('#spinner-div').hide();
+        })
+    });
+});
+
+function drawReport(report){
+    var div_report = $('#div-report');
+    if (report){
+        div_report.empty();
+
+        var query_div_html = '<dt class="col-sm-3">Query name</dt><dd class="col-sm-9">'+report.query+'</dd>'
+        div_report.append(query_div_html);
+
+        var hits_div_html = '<dt class="col-sm-3">Hit files</dt><dd id="div-hits" class="col-sm-9"></dd>';
+        div_report.append(hits_div_html);
+
+        var nested_div = $('#div-hits');
+        if (report.hits.length){
+            nested_div.append('<dl id="div-hits-row" class="row mb-3"></dl>')
+            var nested_div_row = $('#div-hits-row');
+            report.hits.forEach ((hit, idx)=>{
+                var hit_md5 = hit._id;
+                var hit_score = hit._score;
+                var hit_file_name = hit.file_name;
+                var eji = hit.estimated_jaccard_index;
+                var ejc = hit.estimated_jaccard_containment;
+                nested_div_row.append('<dt class="col-sm-4">File name</dt><dd class="col-sm-8">'+hit_file_name+'</dd>');
+                nested_div_row.append('<dt class="col-sm-4">File MD5</dt><dd class="col-sm-8">'+hit_md5+'</dd>');
+                nested_div_row.append('<dt class="col-sm-4">Hit score</dt><dd class="col-sm-8">'+hit_score+'</dd>');
+                nested_div_row.append('<dt class="col-sm-4">Estimated jaccared index</dt><dd class="col-sm-8">'+eji+'</dd>');
+                nested_div_row.append('<dt class="col-sm-4">Estimated jaccared containment</dt><dd class="col-sm-8">'+ejc+'</dd>');
+            });
+        } else {
+            nested_div.html("no result");
+        }
+    }
+}
+
+</script>
+
+{% endblock %}

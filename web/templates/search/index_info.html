@@ -1,0 +1,56 @@
+{% extends "search/index_base.html" %}
+
+{% block content %}
+
+<!-- Modal -->
+<div class="modal fade" id="indexDeleteModal" tabindex="-1" aria-labelledby="indexDeleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="indexDeleteModalLabel">Delete index</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete this index?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger" onclick="location.href='{% url 'search:index_delete' index_name=index_info.index_name %}'">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container mt-5">
+    <h1>Index information</h1>
+    <dl class="row mt-5">
+      <dt class="col-sm-3">Index name</dt>
+      <dd class="col-sm-9">{{ index_info.index_name }}</dd>
+
+      <dt class="col-sm-3">Module</dt>
+      <dd class="col-sm-9">
+        <p>{{ index_info.module_info.module_name }}</p>
+        <p>{{ index_info.module_info.module_params }}</p>
+      </dd>
+
+      <dt class="col-sm-3">Number of Hash function</dt>
+      <dd class="col-sm-9">{{ index_info.num_hash }}</dd>
+
+      <dt class="col-sm-3">K-independent / K-smallest</dt>
+      <dd class="col-sm-9">{% if index_info.use_smallest %}K-smallest{% else %}K-independent{% endif%}</dd>
+
+      <dt class="col-sm-3">Using MinMax</dt>
+      <dd class="col-sm-9">{{ index_info.use_minmax }}</dd>
+
+      <dt class="col-sm-3">Using Mod</dt>
+      <dd class="col-sm-9">{{ index_info.use_mod }}</dd>
+    </dl>
+    <div class="row">
+      <div class="col-lg-12">
+        <button type="button" class="btn btn-danger float-end" data-bs-toggle="modal" data-bs-target="#indexDeleteModal">
+          Delete index
+        </button>
+      </div>
+    </div>
+</div>
+{% endblock %}

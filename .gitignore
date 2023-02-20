@@ -7,3 +7,4 @@ dist/
 museum.egg-info/
 *.pyd
 backup/
+db.sqlite3

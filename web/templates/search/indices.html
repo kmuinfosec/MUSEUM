@@ -1,0 +1,112 @@
+{% extends "search/base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-lg-6 mx-auto">
+            <h1>MUSEUM Indices</h1>
+            <p>Elasticsearch host - {{ es_host }}</p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createIndexModal">Create index</button>
+            <ol class="list-group list-group-numbered mt-3">
+                {% for index in indices %}
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold"><a href="{% url 'search:index_info' index_name=index.index %}">{{ index.index }}</a></div>
+                        <small class="mb-0">Health: {{index.health}}</small><br/>
+                        <small class="mb-0">Status: {{index.status}}</small><br/>
+                        <small class="mb-0">UUID: {{index.uuid}}</small><br/>
+                        <small class="mb-0">Number of docs: {{index.docs_count}}</small><br/>
+                    </div>
+                    <span class="badge bg-primary rounded-pill">{{index.store_size}}</span>
+                </li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="createIndexModal" tabindex="-1" aria-labelledby="createIndexModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createIndexModalLabel">Create index</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createIndexForm" name="create-index-form" method="post">
+                    <div class="mb-1">
+                        <label for="index-name" class="col-form-label">Index name (required)</label>
+                        <input type="text" class="form-control" name="index_name" id="index-name" required>
+                    </div>
+                    <div class="mb-1">
+                        <label for="module-name" class="col-form-label">Module name (required)</label>
+                        <input type="text" class="form-control" placeholder="ae" name="module_name" id="module-name" required>
+                    </div>
+                    <div class="mb-1">
+                        <label for="module-params" class="col-form-label">Module params</label>
+                        <input type="text" class="form-control" placeholder="window_size=128" name="module_params" id="module-params">
+                    </div>
+                    <div class="mb-3">
+                        <label for="num-hash" class="col-form-label">Number of Hash functions (required)</label>
+                        <input type="number" placeholder="128" value="128" class="form-control" name="num_hash" id="num-hash">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="use_smallest" id="k-smallest" value="True" checked>
+                            <label class="form-check-label" for="k-smallest">K-smallest</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="use_smallest" id="k-independent" value="False">
+                            <label class="form-check-label" for="k-independent">K-independent</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" name="use_minmax" id="use-minmax" value="True">
+                            <label class="form-check-label" for="use-minmax">Use minmax</label>
+                        </div>
+                    </div>
+                    <div class="mb-1">
+                        <div class="input-group">
+                            <span class="input-group-text">shards</span>
+                            <input type="number" placeholder="5" value="5" name="shards" class="form-control">
+                            <span class="input-group-text">replicas</span>
+                            <input type="number" placeholder="1" value="1" name="replicas" class="form-control">
+                            <span class="input-group-text">intervals</span>
+                            <input type="number" placeholder="5" value="5" name="intervals" class="form-control">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="createIndex()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function createIndex(){
+    var formData = $("#createIndexForm").serialize();
+    $('#spinner-div').show();
+    $.ajax({
+        cache: false,
+        url: "{% url 'search:create_index' %}",
+        data: { csrfmiddlewaretoken: '{{ csrf_token }}', form_data: formData },
+        type: "POST",
+        dataType: "json"
+    })
+    .done(function(json) {
+        alert("인덱스 생성에 성공하였습니다.");
+        location.reload();
+    })
+    .fail(function(xhr, status, errorThrown) {
+        console.log(xhr);
+        alert("요청 실패!\n에러 메세지: "+xhr.responseText);
+    })
+    .always(function() {
+        $('#spinner-div').hide();
+    })
+}
+</script>
+{% endblock %}

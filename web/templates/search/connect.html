@@ -1,0 +1,23 @@
+{% extends "search/base.html" %}
+{% load static %}
+
+{% block style %}
+<link href="{% static 'base.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+
+{% block content %}
+    <div class="container d-flex align-items-center justify-content-center">
+        <div>
+            <form name="form-es-host" action="{% url 'search:indices' %}" method="post">
+                {% csrf_token %}
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text" id="inputGroup-sizing-lg">Elasticsearch host</span>
+                    <input name="es-host" type="text" class="form-control" placeholder="http://localhost:9200" autocomplete="http://localhost:9200" aria-label="" aria-describedby="inputGroup-sizing-lg" autofocus required>
+                    <button class="btn btn-outline-secondary" type="submit">connect</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}

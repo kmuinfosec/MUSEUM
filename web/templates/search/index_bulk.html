@@ -1,0 +1,40 @@
+{% extends "search/index_base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h1>Bulk</h1>
+    <div class="row mt-5">
+        <div class="input-group input-group-lg">
+            <span class="input-group-text" id="inputGroup-sizing-lg">Directory full-path</span>
+            <input name="dir-path" type="text" class="form-control" placeholder="ex) C:\index_dir" aria-label="" aria-describedby="inputGroup-sizing-lg">
+            <button class="btn btn-outline-secondary" type="button" id="button-submit-bulk">submit</button>
+        </div>
+    </div>
+</div>
+
+<script>
+$(function() {
+    $("#button-submit-bulk").on("click", function() {
+        var dir_path = $('input[name=dir-path]').val();
+        $('#spinner-div').show();
+        $.ajax({
+            url: "{% url 'search:index_bulk' index_name=index_info.index_name %}",
+            data: { csrfmiddlewaretoken: '{{ csrf_token }}', dir_path: dir_path },
+            method: "POST",
+            dataType: "json"
+        })
+        .done(function(json) {
+            $('input[name=dir-path]').val("");
+        })
+        .fail(function(xhr, status, errorThrown) {
+            alert("요청 실패!\n올바른 로컬 디렉토리 경로가 아닙니다.");
+        })
+        .always(function() {
+            $('#spinner-div').hide();
+        })
+    });
+});
+
+</script>
+{% endblock %}
