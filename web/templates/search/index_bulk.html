@@ -7,7 +7,7 @@
     <div class="row mt-5">
         <div class="input-group input-group-lg">
             <span class="input-group-text" id="inputGroup-sizing-lg">Directory full-path</span>
-            <input name="dir-path" type="text" class="form-control" placeholder="ex) C:\index_dir" aria-label="" aria-describedby="inputGroup-sizing-lg">
+            <input name="dir-path" type="text" class="form-control" placeholder="ex) /app/volume/index_dir" aria-label="" aria-describedby="inputGroup-sizing-lg">
             <button class="btn btn-outline-secondary" type="button" id="button-submit-bulk">submit</button>
         </div>
     </div>
@@ -25,7 +25,7 @@ $(function() {
             dataType: "json"
         })
         .done(function(json) {
-            $('input[name=dir-path]').val("");
+            alert("Bulk 성공!");
         })
         .fail(function(xhr, status, errorThrown) {
             alert("요청 실패!\n올바른 로컬 디렉토리 경로가 아닙니다.");

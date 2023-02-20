@@ -38,20 +38,21 @@ def cat_indices(host: str) -> List[dict]:
     es = Elasticsearch(host)
     res = es.cat.indices().body.strip()
     indices = []
-    for line in res.split("\n"):
-        health, status, index, uuid, pri, rep, docs_count, docs_deleted, store_size, pri_store_size = line.split()
-        index_info = {
-            'health': health,
-            'status': status,
-            'index': index,
-            'uuid': uuid,
-            'pri': pri,
-            'docs_count': docs_count,
-            'docs_deleted': docs_deleted,
-            'store_size': store_size,
-            'pri_store_size': pri_store_size
-        }
-        indices.append(index_info)
+    if res:
+        for line in res.split("\n"):
+            health, status, index, uuid, pri, rep, docs_count, docs_deleted, store_size, pri_store_size = line.split()
+            index_info = {
+                'health': health,
+                'status': status,
+                'index': index,
+                'uuid': uuid,
+                'pri': pri,
+                'docs_count': docs_count,
+                'docs_deleted': docs_deleted,
+                'store_size': store_size,
+                'pri_store_size': pri_store_size
+            }
+            indices.append(index_info)
     return indices
 
 

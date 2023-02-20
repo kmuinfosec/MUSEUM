@@ -7,7 +7,7 @@
     <div class="row mt-5">
         <div class="input-group input-group-lg">
             <span class="input-group-text" id="inputGroup-sizing-lg">File path</span>
-            <input name="file-path" type="text" class="form-control" placeholder="ex) C:\search_dir\test.pdf" aria-label="" aria-describedby="inputGroup-sizing-lg">
+            <input name="file-path" type="text" class="form-control" placeholder="ex) /app/volume/test.pdf" aria-label="" aria-describedby="inputGroup-sizing-lg">
             <button class="btn btn-outline-secondary" type="button" id="button-submit-search">submit</button>
         </div>
     </div>
@@ -32,7 +32,6 @@ $(function() {
         })
         .done(function(res) {
             drawReport(res.report);
-            $('input[name=file-path]').val("");
         })
         .fail(function(xhr, status, errorThrown) {
             alert("요청 실패!\n올바른 로컬 파일 경로가 아닙니다.");

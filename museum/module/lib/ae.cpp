@@ -49,7 +49,7 @@ long long ReadFile(const char* file_path, char **_data, long long *remain_size)
 
 static PyObject* AEChunking(PyObject *self, PyObject *args)
 {
-    std::locale::global(std::locale(".UTF-8"));
+//    std::locale::global(std::locale(".UTF-8"));
 
     PyObject *file_path_obj, *file_path_bytes;
     char *file_path;

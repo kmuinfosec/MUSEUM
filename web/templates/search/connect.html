@@ -13,7 +13,7 @@
                 {% csrf_token %}
                 <div class="input-group input-group-lg">
                     <span class="input-group-text" id="inputGroup-sizing-lg">Elasticsearch host</span>
-                    <input name="es-host" type="text" class="form-control" placeholder="http://localhost:9200" autocomplete="http://localhost:9200" aria-label="" aria-describedby="inputGroup-sizing-lg" autofocus required>
+                    <input name="es-host" type="text" class="form-control" placeholder="http://museum-es:9200" value="http://museum-es:9200" aria-label="" aria-describedby="inputGroup-sizing-lg" autofocus required>
                     <button class="btn btn-outline-secondary" type="submit">connect</button>
                 </div>
             </form>

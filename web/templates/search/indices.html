@@ -97,7 +97,6 @@ function createIndex(){
         dataType: "json"
     })
     .done(function(json) {
-        alert("인덱스 생성에 성공하였습니다.");
         location.reload();
     })
     .fail(function(xhr, status, errorThrown) {
