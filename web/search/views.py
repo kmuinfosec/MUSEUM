@@ -4,6 +4,8 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from pathlib import Path
 from urllib import parse
 import json
+import urllib.request
+import urllib.error
 
 from museum import api
 
@@ -19,6 +21,16 @@ def indices_view(request):
         if 'es-host' not in request.POST:
             return redirect('search:connect')
         es_host = request.POST['es-host']
+
+        try:
+            es_content = json.dumps(urllib.request.urlopen(es_host).read().decode('utf-8'))
+        except urllib.error.URLError:
+            return redirect('search:connect')
+        except json.decoder.JSONDecodeError:
+            return redirect('search:connect')
+        if 'name' not in es_content or 'version' not in es_content or 'tagline' not in es_content:
+            return redirect('search:connect')
+
         request.session['es-host'] = es_host
 
     es_host = request.session.get('es-host', False)

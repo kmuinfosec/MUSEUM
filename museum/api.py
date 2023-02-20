@@ -15,7 +15,7 @@ def create_index(host: str, index_name: str, module_name: str, module_params: di
     if index_name == '':
         return False
 
-    es = Elasticsearch(host)
+    es = Elasticsearch(host, timeout=30)
     if es.indices.exists(index=index_name):
         return False
 
@@ -29,18 +29,21 @@ def create_index(host: str, index_name: str, module_name: str, module_params: di
 
 
 def delete_index(host: str, index_name: str):
-    es = Elasticsearch(host)
+    es = Elasticsearch(host, timeout=30)
     if es.indices.exists(index=index_name):
         es.indices.delete(index=index_name)
 
 
 def cat_indices(host: str) -> List[dict]:
-    es = Elasticsearch(host)
+    es = Elasticsearch(host, timeout=30)
     res = es.cat.indices().body.strip()
     indices = []
     if res:
         for line in res.split("\n"):
             health, status, index, uuid, pri, rep, docs_count, docs_deleted, store_size, pri_store_size = line.split()
+            mapping_info = es.indices.get_mapping(index=index)[index]['mappings']
+            if '_meta' not in mapping_info or 'num_hash' not in mapping_info['_meta']:
+                continue
             index_info = {
                 'health': health,
                 'status': status,
@@ -57,7 +60,7 @@ def cat_indices(host: str) -> List[dict]:
 
 
 def get_index_info(host: str, index_name: str) -> dict:
-    es = Elasticsearch(host)
+    es = Elasticsearch(host, timeout=30)
     if not es.indices.exists(index=index_name):
         raise Exception(f"Index \"{index_name}\" does not exist")
     index_info = es.indices.get_mapping(index=index_name)[index_name]['mappings']['_meta']
@@ -82,7 +85,7 @@ def bulk(host: str, index_name: str, dir_path: Path, process=8, batch_size=10000
 
 
 def search(host: str, index_name: str, file_path: Path, limit=1) -> dict:
-    es = Elasticsearch(host)
+    es = Elasticsearch(host, timeout=30)
     index_info = get_index_info(host, index_name)
     _, samples, num_chunks, file_name = preprocess(file_path, index_info)
     report = {'query': file_name, 'hits': []}
