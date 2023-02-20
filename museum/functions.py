@@ -14,7 +14,7 @@ def preprocess(file_path: Path, index_info: dict):
         chunk_set = modular_sampling(chunk_set, index_info['use_mod'])
 
     samples = minhash(chunk_set, index_info['num_hash'], index_info['use_smallest'], index_info['use_minmax'])
-    return get_file_md5(file_path), samples, len(chunk_set), file_path.stem
+    return get_file_md5(file_path), samples, len(chunk_set), file_path.name
 
 
 def minhash(chunk_set: Set[str], num_hash: int, use_smallest: bool, use_min_max: bool):

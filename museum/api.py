@@ -45,10 +45,10 @@ def cat_indices(host: str) -> List[dict]:
             'index': index,
             'uuid': uuid,
             'pri': pri,
-            'docs.count': docs_count,
-            'docs.deleted': docs_deleted,
-            'store.size': store_size,
-            'pri.store.size': pri_store_size
+            'docs_count': docs_count,
+            'docs_deleted': docs_deleted,
+            'store_size': store_size,
+            'pri_store_size': pri_store_size
         }
         indices.append(index_info)
     return indices
