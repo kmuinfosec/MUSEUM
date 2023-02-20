@@ -13,18 +13,19 @@ def create_index(host: str, index_name: str, module_name: str, module_params: di
                  use_smallest=False, use_minmax=False, use_mod=False, interval=5, shards=5, replicas=1):
     index_name = index_name.strip()
     if index_name == '':
-        raise Exception("Invalid index name")
+        return False
 
     es = Elasticsearch(host)
     if es.indices.exists(index=index_name):
-        raise Exception(f"Index \"{index_name}\" already exists")
+        return False
 
-    res = es.indices.create(
+    es.indices.create(
         index=index_name,
         settings=template.get_settings(interval, shards, replicas),
         mappings=template.get_mappings(module_name, module_params, num_hash, use_smallest, use_minmax, use_mod)
     )
-    return res
+
+    return True
 
 
 def delete_index(host: str, index_name: str):
