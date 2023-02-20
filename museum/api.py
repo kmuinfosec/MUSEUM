@@ -4,6 +4,7 @@ from museum.utils import mp, batch_generator, get_file_md5, walk_directory
 
 from elasticsearch import Elasticsearch, ConnectionTimeout
 from tqdm import tqdm
+from typing import List
 from pathlib import Path
 import sys
 
@@ -30,6 +31,27 @@ def delete_index(host: str, index_name: str):
     es = Elasticsearch(host)
     if es.indices.exists(index=index_name):
         es.indices.delete(index=index_name)
+
+
+def cat_indices(host: str) -> List[dict]:
+    es = Elasticsearch(host)
+    res = es.cat.indices().body.strip()
+    indices = []
+    for line in res.split("\n"):
+        health, status, index, uuid, pri, rep, docs_count, docs_deleted, store_size, pri_store_size = line.split()
+        index_info = {
+            'health': health,
+            'status': status,
+            'index': index,
+            'uuid': uuid,
+            'pri': pri,
+            'docs.count': docs_count,
+            'docs.deleted': docs_deleted,
+            'store.size': store_size,
+            'pri.store.size': pri_store_size
+        }
+        indices.append(index_info)
+    return indices
 
 
 def get_index_info(host: str, index_name: str) -> dict:
