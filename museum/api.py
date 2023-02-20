@@ -4,6 +4,7 @@ from museum.utils import mp, batch_generator, get_file_md5, walk_directory
 
 from elasticsearch import Elasticsearch, ConnectionTimeout
 from tqdm import tqdm
+from pathlib import Path
 import sys
 
 
@@ -20,7 +21,7 @@ def create_index(host: str, index_name: str, module_name: str, module_params: di
     res = es.indices.create(
         index=index_name,
         settings=template.get_settings(interval, shards, replicas),
-        mappings=template.get_mappings(module_name, module_params, num_hash, use_smallest, use_mod, use_minmax)
+        mappings=template.get_mappings(module_name, module_params, num_hash, use_smallest, use_minmax, use_mod)
     )
     return res
 
@@ -40,7 +41,7 @@ def get_index_info(host: str, index_name: str) -> dict:
     return index_info
 
 
-def bulk(host: str, index_name: str, dir_path: str, process=8, batch_size=10000, disable_tqdm=False):
+def bulk(host: str, index_name: str, dir_path: Path, process=8, batch_size=10000, disable_tqdm=False):
     es = Elasticsearch(host, timeout=600)
     index_info = get_index_info(host, index_name)
     path_list = walk_directory(dir_path)
@@ -56,7 +57,7 @@ def bulk(host: str, index_name: str, dir_path: str, process=8, batch_size=10000,
     pbar.close()
 
 
-def search(host: str, index_name: str, file_path: str, limit=1) -> dict:
+def search(host: str, index_name: str, file_path: Path, limit=1) -> dict:
     es = Elasticsearch(host)
     index_info = get_index_info(host, index_name)
     _, samples, num_chunks, file_name = preprocess(file_path, index_info)
@@ -72,7 +73,7 @@ def search(host: str, index_name: str, file_path: str, limit=1) -> dict:
     return report
 
 
-def msearch(host: str, index_name: str, dir_path: str, limit=1, process=1, batch_size=100, disable_tqdm=False):
+def msearch(host: str, index_name: str, dir_path: Path, limit=1, process=1, batch_size=100, disable_tqdm=False):
     es = Elasticsearch(host, timeout=600)
     index_info = get_index_info(host, index_name)
     path_list = walk_directory(dir_path)
@@ -105,7 +106,7 @@ def msearch(host: str, index_name: str, dir_path: str, limit=1, process=1, batch
     pbar.close()
 
 
-def check_exist(host: str, index_name: str, file_path: str) -> bool:
+def check_exist(host: str, index_name: str, file_path: Path) -> bool:
     es = Elasticsearch(host)
     status = es.exists(index=index_name, id=get_file_md5(file_path), source=False).meta.status
     return True if status == 200 else False

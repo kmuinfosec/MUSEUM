@@ -1,7 +1,9 @@
+from typing import List
+from pathlib import PurePath
 import json
 
 
-def get_bulk_request(md5, samples, num_chunks, file_name, index_name):
+def get_bulk_request(md5: str, samples: List[str], num_chunks: int, file_name: PurePath, index_name: str):
     header = {'index': {"_index": index_name, '_id': md5}}
     body = {
         'data': list(samples),
@@ -11,7 +13,7 @@ def get_bulk_request(md5, samples, num_chunks, file_name, index_name):
     return json.dumps(header)+'\n'+json.dumps(body)
 
 
-def get_search_query(samples):
+def get_search_query(samples: List[str]):
     query = {
         "bool": {
             "should": [
@@ -22,7 +24,7 @@ def get_search_query(samples):
     return query
 
 
-def get_exists_request(index_name, md5):
+def get_exists_request(index_name: str, md5: str):
     header = {'index': index_name, 'search_type': 'dfs_query_then_fetch'}
     body = {
         "_source": False,
@@ -35,7 +37,7 @@ def get_exists_request(index_name, md5):
     return json.dumps(header)+'\n'+json.dumps(body)
 
 
-def get_msearch_request(index_name, samples, limit):
+def get_msearch_request(index_name: str, samples: List[str], limit: int):
     header = {'index': index_name, 'search_type': 'dfs_query_then_fetch'}
     body = {
         "_source": True,
@@ -52,7 +54,7 @@ def get_msearch_request(index_name, samples, limit):
     return json.dumps(header)+'\n'+json.dumps(body)
 
 
-def get_settings(interval=10, shards=5, replicas=1):
+def get_settings(interval: int = 10, shards: int = 5, replicas: int = 1):
     return {
         "refresh_interval": f'{interval}s',
         'number_of_shards': shards,
@@ -68,7 +70,7 @@ def get_settings(interval=10, shards=5, replicas=1):
     }
 
 
-def get_mappings(module_name, module_params, num_hash, use_smallest, use_mod, use_minmax):
+def get_mappings(module_name: str, module_params: dict, num_hash: int, use_smallest: bool, use_minmax: bool, use_mod):
     return {
         '_meta': {
             'module_info': {

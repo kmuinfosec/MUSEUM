@@ -1,7 +1,8 @@
 from museum.cext import ae_chunking
+from pathlib import Path
 
 
-def process(file_path: str, module_params):
+def process(file_path: Path, module_params):
     chunk_list = ae_chunking(file_path, module_params['window_size'])
     return chunk_list
 

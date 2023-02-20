@@ -1,11 +1,13 @@
+from pathlib import Path
 import re
+
 
 MAX_FILESIZE = 16 * 1024 * 1024
 MAX_STRINGCNT = 2048
 MAX_STRINGLEN = 1024
 
 
-def process(file_path: str, _):
+def process(file_path: Path, _):
     with open(file_path, "rb") as f:
         data = f.read(MAX_FILESIZE)
     strings = re.findall(b"[\x1f-\x7e]{6,}", data)

@@ -1,12 +1,11 @@
 from museum.utils import get_file_md5, hit_word_parser
-from typing import List
-import os
+from typing import List, Set
+from pathlib import Path
 import hashlib
 import importlib
 
 
-def preprocess(file_path: str, index_info: dict):
-    file_name, md5 = os.path.split(file_path)[1], get_file_md5(file_path)
+def preprocess(file_path: Path, index_info: dict):
 
     module = importlib.import_module(f'museum.module.{index_info["module_info"]["module_name"]}')
     chunk_set = set(module.process(file_path, index_info['module_info']['module_params']))
@@ -15,10 +14,10 @@ def preprocess(file_path: str, index_info: dict):
         chunk_set = modular_sampling(chunk_set, index_info['use_mod'])
 
     samples = minhash(chunk_set, index_info['num_hash'], index_info['use_smallest'], index_info['use_minmax'])
-    return md5, samples, len(chunk_set), file_name
+    return get_file_md5(file_path), samples, len(chunk_set), file_path.stem
 
 
-def minhash(chunk_set, num_hash, use_smallest, use_min_max):
+def minhash(chunk_set: Set[str], num_hash: int, use_smallest: bool, use_min_max: bool):
     chunk_list = list(chunk_set)
     if len(chunk_list) <= 1:
         return
@@ -29,7 +28,7 @@ def minhash(chunk_set, num_hash, use_smallest, use_min_max):
     return set(samples)
 
 
-def k_smallest(chunk_list, num_hash):
+def k_smallest(chunk_list: List[str], num_hash: int):
     int_chunks = []
     for chunk in chunk_list:
         if not type(chunk) == bytes:
@@ -44,7 +43,7 @@ def k_smallest(chunk_list, num_hash):
     return samples
 
 
-def k_independent(chunk_list, num_hash, use_min_max):
+def k_independent(chunk_list: List[str], num_hash: int, use_min_max: bool):
     samples = []
     int_samples = []
     for i in range(1, num_hash + 1):
@@ -62,7 +61,7 @@ def k_independent(chunk_list, num_hash, use_min_max):
     return samples
 
 
-def modular_sampling(samples, mod):
+def modular_sampling(samples: Set[str], mod):
     sampled_set = set()
     samples = list(set(samples))
     for sample in samples:

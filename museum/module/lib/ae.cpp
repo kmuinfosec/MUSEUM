@@ -51,12 +51,22 @@ static PyObject* AEChunking(PyObject *self, PyObject *args)
 {
     std::locale::global(std::locale(".UTF-8"));
 
+    PyObject *file_path_obj, *file_path_bytes;
     char *file_path;
     unsigned int window_size;
     PyObject *ret_list = PyList_New(0);
 
-    if (!PyArg_ParseTuple(args, "sI", &file_path, &window_size))
+    if (!PyArg_ParseTuple(args, "OI", &file_path_obj, &window_size))
         return NULL;
+    if (file_path_obj != Py_None){
+        if (!PyUnicode_FSConverter(file_path_obj, &file_path_bytes))
+            return NULL;
+        file_path = PyBytes_AsString(file_path_bytes);
+    } else {
+        return NULL;
+    }
+    Py_DECREF(file_path_obj);
+    Py_DECREF(file_path_bytes);
 
     char *buffer;
 	long long remain_size = GetFileSize(file_path);

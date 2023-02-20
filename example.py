@@ -1,3 +1,4 @@
+from pathlib import Path
 import time
 
 from museum import api
@@ -5,13 +6,13 @@ from museum import api
 
 if __name__ == '__main__':
     es_host = 'http://localhost:9200'
-    index_dir = r'C:\index_dir'
-    search_dir = r'C:\search_dir'
-    search_file = r'C:\test.pdf'
+    index_dir = Path(r'C:\index_dir')
+    search_dir = Path(r'C:\search_dir')
+    search_file = Path(r'C:\test.pdf')
     index_name = 'test'
 
     # api.delete_index(es_host, index_name)
-    api.create_index(es_host, index_name, 'ae', module_params={'window_size': 128}, num_hash=64)
+    api.create_index(es_host, index_name, 'ae', module_params={'window_size': 128}, num_hash=64, use_smallest=True)
     api.bulk(es_host, index_name, index_dir, process=2)
     time.sleep(6)
 
