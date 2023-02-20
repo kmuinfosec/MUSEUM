@@ -1,0 +1,23 @@
+services:
+  museum:
+    build: "."
+    container_name: "museum-main"
+    ports:
+      - "8000:8000"
+    volumes:
+      - C:\Users\user\Desktop\docker_volume:/app/volume
+    networks:
+      - museum-net
+  museum-es:
+    image: "docker.elastic.co/elasticsearch/elasticsearch:8.6.2"
+    container_name: "museum-es"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - museum-net
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+networks:
+  museum-net:
