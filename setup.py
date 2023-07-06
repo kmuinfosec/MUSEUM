@@ -16,7 +16,7 @@ setup(name="museum",
             'six==1.16.0',
             'tqdm==4.64.1',
             'urllib3==1.26.14',
-            'Django==4.1.7'
+            'Django==4.1.10'
       ],
       ext_modules=[cext_mod],
       description="Scalable and Multifaceted Search and Its Application for Binary Malware Files"
